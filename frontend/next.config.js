@@ -1,14 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'standalone', // for Vercel custom deployment environments
+  output: 'standalone',
   experimental: {
-    appDir: true, // enables app/ directory (App Router)
+    appDir: true,
   },
-  images: {
-    domains: ['localhost', 'vercel.app'], // adjust if needed
-  },
-  reactStrictMode: true,
-  swcMinify: true,
 };
 
 module.exports = nextConfig;
