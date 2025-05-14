@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block title %}About Us - KalyanX{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow-sm mb-5">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="h3 mb-0">About KalyanX</h2>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <h3 class="h4 mb-3">Our Mission</h3>
+                        <p>KalyanX is India's premier data-driven Satta Matka prediction platform. Our mission is to revolutionize the prediction experience by leveraging advanced machine learning algorithms to provide accurate, reliable insights for Matka enthusiasts.</p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h3 class="h4 mb-3">What Sets Us Apart</h3>
+                        <div class="mb-3">
+                            <h4 class="h5 mb-2"><i class="fas fa-robot me-2 text-primary"></i>Advanced AI Algorithms</h4>
+                            <p>Unlike traditional guesswork, KalyanX uses sophisticated machine learning models trained on years of historical data to identify patterns and generate high-confidence predictions.</p>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <h4 class="h5 mb-2"><i class="fas fa-chart-line me-2 text-primary"></i>Data-Driven Approach</h4>
+                            <p>We analyze thousands of data points from historical results to offer reliable predictions with confidence scores, helping you make more informed decisions.</p>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <h4 class="h5 mb-2"><i class="fas fa-users me-2 text-primary"></i>Community-Focused</h4>
+                            <p>We foster a supportive community through our premium forum where members can exchange insights, strategies, and experiences.</p>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <h4 class="h5 mb-2"><i class="fas fa-bell me-2 text-primary"></i>Real-Time Updates</h4>
+                            <p>Stay ahead with instant notifications for market results and prediction matches delivered directly to your device.</p>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <h3 class="h4 mb-3">Our Journey</h3>
+                        <p>Founded in 2023, KalyanX began as a small project to analyze Matka patterns using data science principles. After months of development and training our prediction models on historical data, we launched our platform with a simple goal: to provide the most accurate predictions possible through technology.</p>
+                        <p>Today, we serve thousands of users across India with our premium prediction service, constantly refining our algorithms to improve accuracy and user experience.</p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h3 class="h4 mb-3">Our Values</h3>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item"><i class="fas fa-check-circle text-success me-2"></i> <strong>Transparency:</strong> We clearly display confidence scores with every prediction.</li>
+                            <li class="list-group-item"><i class="fas fa-check-circle text-success me-2"></i> <strong>Accuracy:</strong> Continuous improvement of our ML models for better predictions.</li>
+                            <li class="list-group-item"><i class="fas fa-check-circle text-success me-2"></i> <strong>Reliability:</strong> Consistent predictions for all markets, even on holidays.</li>
+                            <li class="list-group-item"><i class="fas fa-check-circle text-success me-2"></i> <strong>Innovation:</strong> Leveraging cutting-edge technology for better user experience.</li>
+                        </ul>
+                    </div>
+                    
+                    <div>
+                        <h3 class="h4 mb-3">Join KalyanX Today</h3>
+                        <p>Experience the difference that data-driven predictions can make. Start your 7-day free trial and see why thousands trust KalyanX for their Matka predictions.</p>
+                        <div class="text-center mt-4">
+                            <a href="{{ url_for('auth.register') }}" class="btn btn-primary">Start Free Trial Now</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
