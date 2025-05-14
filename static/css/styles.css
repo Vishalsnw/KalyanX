@@ -1,0 +1,208 @@
+/* KalyanX - Custom Styles */
+
+/* Professional theme styles */
+:root {
+    --primary-color: #0d6efd;
+    --secondary-color: #6c757d;
+    --success-color: #198754;
+    --dark-bg: #1a1d20;
+    --darker-bg: #141618;
+}
+
+body {
+    background-color: var(--dark-bg);
+    color: #fff;
+}
+
+.navbar {
+    background-color: var(--darker-bg);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.card {
+    background-color: var(--darker-bg);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.dropdown-menu {
+    background-color: var(--darker-bg);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.dropdown-item {
+    color: #fff;
+}
+
+.dropdown-item:hover {
+    background-color: var(--dark-bg);
+    color: var(--primary-color);
+}
+
+/* Notification styles */
+.notification-item {
+    padding: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.notification-item.unread {
+    background-color: rgba(13, 110, 253, 0.1);
+}
+
+/* Premium content styles */
+.premium-content {
+    position: relative;
+    transition: filter 0.3s ease;
+}
+
+.register-prompt {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 100;
+    width: 80%;
+    max-width: 400px;
+}
+
+/* Digit and Jodi box styles */
+.digit-box {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background-color: #dc3545;
+    color: #fff;
+    font-weight: bold;
+    font-size: 1.2rem;
+    margin-right: 5px;
+    margin-bottom: 5px;
+}
+
+.jodi-box {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 70px;
+    height: 36px;
+    border-radius: 6px;
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    font-weight: bold;
+    font-size: 1rem;
+    margin-right: 5px;
+    margin-bottom: 5px;
+    padding: 0 10px;
+}
+
+
+/* Authentication styles */
+.auth-container {
+  max-width: 460px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.auth-logo {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.auth-links {
+  font-size: 0.9rem;
+}
+
+/* Divider with text */
+.divider-with-text {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  color: var(--bs-secondary);
+  margin: 1.5rem 0;
+}
+
+.divider-with-text::before,
+.divider-with-text::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid var(--bs-border-color);
+}
+
+.divider-with-text span {
+  padding: 0 1rem;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Gambling-themed button */
+.btn-gambling {
+  background: linear-gradient(135deg, #e6a919 0%, #e91e63 100%);
+  border: none;
+  color: white;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+}
+
+.btn-gambling:hover {
+  background: linear-gradient(135deg, #d19200 0%, #c1134e 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.btn-gambling:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Firebase UI customization */
+#firebaseui-auth-container .firebaseui-card-content {
+  padding: 0;
+}
+
+#firebaseui-auth-container .firebaseui-idp-button {
+  border-radius: 4px;
+  max-width: 100%;
+  min-height: 50px;
+}
+
+/* Premium content styles */
+.premium-content {
+  position: relative;
+  transition: filter 0.3s ease;
+}
+
+.register-prompt {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+  width: 100%;
+  text-align: center;
+  pointer-events: auto !important;
+}
+
+.register-prompt .alert {
+  display: inline-block;
+  margin: 0 auto;
+  padding: 1rem 2rem;
+  background: rgba(255, 255, 255, 0.95);
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 576px) {
+  .auth-container {
+    margin: 1rem auto;
+  }
+
+  .auth-logo {
+    font-size: 2.5rem;
+  }
+}
