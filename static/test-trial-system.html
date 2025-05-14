@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KalyanX - Trial System Test</title>
+    <link href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css" rel="stylesheet">
+    <link href="/static/css/styles.css" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@fingerprintjs/fingerprintjs@3/dist/fp.min.js"></script>
+</head>
+<body class="bg-dark text-light">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-md-10">
+                <h1 class="text-center mb-5">KalyanX Trial System Test</h1>
+                
+                <div class="row mb-5">
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header bg-primary">
+                                <h4 class="mb-0">Trial System Status</h4>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <h5>Your Visitor ID:</h5>
+                                    <div class="alert alert-info" id="visitor-id">Loading...</div>
+                                </div>
+                                <div class="mb-3">
+                                    <h5>Trial Start Time:</h5>
+                                    <div class="alert alert-info" id="trial-start">Loading...</div>
+                                </div>
+                                <div class="mb-3">
+                                    <h5>Days Passed:</h5>
+                                    <div class="alert alert-info" id="days-passed">Loading...</div>
+                                </div>
+                                <div class="mb-3">
+                                    <h5>Access Status:</h5>
+                                    <div class="alert" id="access-status">Loading...</div>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <div class="d-grid gap-2">
+                                    <button id="reset-trial" class="btn btn-warning">Reset Trial Period</button>
+                                    <button id="manual-override" class="btn btn-danger">Simulate Trial Expiration</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header bg-success">
+                                <h4 class="mb-0">Premium Content Test</h4>
+                            </div>
+                            <div class="card-body">
+                                <div class="premium-content position-relative mb-4 p-3 border border-warning rounded">
+                                    <h5 class="mb-3">Sample Premium Content</h5>
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <h6>Open Digits</h6>
+                                            <div class="digits-container d-flex flex-wrap gap-2 mb-3">
+                                                <span class="digit-box">1</span>
+                                                <span class="digit-box">3</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <h6>Jodi</h6>
+                                            <div class="jodi-container d-flex flex-wrap gap-2">
+                                                <span class="jodi-box bg-success text-white">13-67</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="alert alert-warning">
+                                    <p><strong>Status:</strong> <span id="premium-status">Loading...</span></p>
+                                    <p class="mb-0 small">If your trial has expired, the content above should be blurred with a registration prompt overlay.</p>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <div class="d-grid">
+                                    <button id="refresh-status" class="btn btn-primary">Refresh Status</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card mb-5">
+                    <div class="card-header bg-info text-dark">
+                        <h4 class="mb-0">Debug Console</h4>
+                    </div>
+                    <div class="card-body">
+                        <pre class="bg-dark p-3 rounded" style="height: 200px; overflow-y: auto;" id="debug-console">Initializing trial system...</pre>
+                    </div>
+                </div>
+                
+                <div class="text-center">
+                    <a href="/" class="btn btn-outline-light">Back to Home</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/js/trial-access.js"></script>
+    <script>
+        // Test page for the trial system
+        const debugConsole = document.getElementById('debug-console');
+        
+        // Log function that writes to our debug console
+        function debug(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            debugConsole.innerHTML += `\n[${timestamp}] ${message}`;
+            debugConsole.scrollTop = debugConsole.scrollHeight;
+        }
+        
+        // Initialize the trial access system
+        let trialManager;
+        
+        async function initializeTrialSystem() {
+            debug('Starting trial system initialization...');
+            
+            try {
+                trialManager = new TrialAccessManager();
+                await trialManager.initialize();
+                debug('Trial system initialized successfully.');
+                
+                // Update the UI with visitor information
+                updateVisitorInfo();
+            } catch (error) {
+                debug(`Error initializing trial system: ${error.message}`);
+                document.getElementById('visitor-id').textContent = 'Error loading';
+                document.getElementById('trial-start').textContent = 'Error loading';
+                document.getElementById('days-passed').textContent = 'Error loading';
+                document.getElementById('access-status').textContent = 'Error loading';
+                document.getElementById('access-status').classList.add('alert-danger');
+            }
+        }
+        
+        async function updateVisitorInfo() {
+            try {
+                // Get visitor ID
+                const visitorId = await trialManager.getVisitorId();
+                document.getElementById('visitor-id').textContent = visitorId;
+                debug(`Retrieved visitor ID: ${visitorId}`);
+                
+                // Get trial start time
+                const storageKey = `trial_start_${visitorId}`;
+                let trialStart = localStorage.getItem(storageKey);
+                
+                if (trialStart) {
+                    const startDate = new Date(parseInt(trialStart));
+                    document.getElementById('trial-start').textContent = startDate.toLocaleString();
+                    
+                    // Calculate days passed
+                    const daysPassed = (Date.now() - parseInt(trialStart)) / (1000 * 60 * 60 * 24);
+                    document.getElementById('days-passed').textContent = daysPassed.toFixed(2) + ' days';
+                    
+                    // Check access status
+                    const hasAccess = daysPassed < 7;
+                    document.getElementById('access-status').textContent = hasAccess ? 'Active' : 'Expired';
+                    document.getElementById('access-status').className = 'alert ' + (hasAccess ? 'alert-success' : 'alert-danger');
+                    
+                    document.getElementById('premium-status').textContent = hasAccess ? 'Active - Content Visible' : 'Expired - Content Blurred';
+                    
+                    debug(`Trial status: ${daysPassed.toFixed(2)} days passed, access: ${hasAccess}`);
+                } else {
+                    document.getElementById('trial-start').textContent = 'Not started yet';
+                    document.getElementById('days-passed').textContent = '0 days';
+                    document.getElementById('access-status').textContent = 'Not started';
+                    document.getElementById('access-status').className = 'alert alert-warning';
+                    document.getElementById('premium-status').textContent = 'Not started';
+                    
+                    debug('Trial not started yet');
+                }
+                
+                // Update content visibility
+                await trialManager.updateContentVisibility();
+            } catch (error) {
+                debug(`Error updating visitor info: ${error.message}`);
+            }
+        }
+        
+        // Button event handlers
+        document.getElementById('reset-trial').addEventListener('click', async () => {
+            try {
+                const visitorId = await trialManager.getVisitorId();
+                const storageKey = `trial_start_${visitorId}`;
+                
+                localStorage.removeItem(storageKey);
+                debug('Trial period reset');
+                
+                // Start a new trial
+                localStorage.setItem(storageKey, Date.now().toString());
+                debug('New trial period started');
+                
+                // Update UI
+                updateVisitorInfo();
+            } catch (error) {
+                debug(`Error resetting trial: ${error.message}`);
+            }
+        });
+        
+        document.getElementById('manual-override').addEventListener('click', async () => {
+            try {
+                const visitorId = await trialManager.getVisitorId();
+                const storageKey = `trial_start_${visitorId}`;
+                
+                // Set trial start to 8 days ago (expired)
+                const eightDaysAgo = Date.now() - (8 * 24 * 60 * 60 * 1000);
+                localStorage.setItem(storageKey, eightDaysAgo.toString());
+                debug('Trial period manually expired');
+                
+                // Update UI
+                updateVisitorInfo();
+            } catch (error) {
+                debug(`Error overriding trial: ${error.message}`);
+            }
+        });
+        
+        document.getElementById('refresh-status').addEventListener('click', () => {
+            updateVisitorInfo();
+            debug('Status refreshed');
+        });
+        
+        // Initialize on page load
+        window.addEventListener('DOMContentLoaded', initializeTrialSystem);
+    </script>
+</body>
+</html>
