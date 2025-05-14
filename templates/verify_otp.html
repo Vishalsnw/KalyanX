@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+
+{% block title %}Verify OTP - KalyanX{% endblock %}
+
+{% block head_extra %}
+<meta name="robots" content="noindex, nofollow">
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="text-center mb-4">
+        <div class="auth-logo">
+            <i class="fas fa-dice-d20 text-danger"></i>
+        </div>
+        {% if email %}
+        <h1 class="h3 mb-3 fw-normal">Verify Your Email</h1>
+        <p class="text-muted">Enter the 6-digit OTP sent to your email</p>
+        {% else %}
+        <h1 class="h3 mb-3 fw-normal">Verify Your Mobile Number</h1>
+        <p class="text-muted">Enter the 6-digit OTP sent to your mobile</p>
+        {% endif %}
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    {% if 'OTP' in message %}
+                        <div class="alert alert-{{ category }} mt-3 text-center">
+                            <strong>{{ message }}</strong>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <div class="card">
+        <div class="card-body p-4">
+            <form id="otp-form" method="post" action="{{ url_for('auth.verify_otp_route') }}">
+                <!-- Hidden field for combined OTP -->
+                <input type="hidden" id="otp" name="otp" value="">
+                
+                <div class="otp-input-container d-flex justify-content-between mb-4">
+                    <input type="text" class="form-control otp-input mx-1" style="width: calc(16.66% - 8px);" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
+                    <input type="text" class="form-control otp-input mx-1" style="width: calc(16.66% - 8px);" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
+                    <input type="text" class="form-control otp-input mx-1" style="width: calc(16.66% - 8px);" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
+                    <input type="text" class="form-control otp-input mx-1" style="width: calc(16.66% - 8px);" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
+                    <input type="text" class="form-control otp-input mx-1" style="width: calc(16.66% - 8px);" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
+                    <input type="text" class="form-control otp-input mx-1" style="width: calc(16.66% - 8px);" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
+                </div>
+                
+                <div class="mb-4 text-center">
+                    <small class="text-muted">Didn't receive OTP? <a href="#" id="resend-otp">Resend OTP</a></small>
+                </div>
+                
+                <div class="d-grid">
+                    <button class="btn btn-gambling btn-lg" type="submit">Verify OTP</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div class="auth-links text-center mt-3">
+        <p><a href="{{ url_for('auth.register') }}"><i class="fas fa-arrow-left me-1"></i> Back to Registration</a></p>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        setupOtpForm();
+    });
+</script>
+{% endblock %}

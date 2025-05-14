@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+
+{% block title %}Login - KalyanX{% endblock %}
+
+{% block head_extra %}
+<meta name="robots" content="noindex, nofollow">
+<!-- Firebase is now loaded in the base template -->
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="text-center mb-4">
+        <div class="auth-logo">
+            <i class="fas fa-dice-d20 text-danger"></i>
+        </div>
+        <h1 class="h3 mb-3 fw-normal">Welcome Back to KalyanX</h1>
+        {% if request.args.get('admin') == '1' %}
+        <div class="alert alert-danger">
+            <i class="fas fa-user-shield me-2"></i> Admin Login
+        </div>
+        <p class="text-muted">Please enter your admin credentials</p>
+        {% else %}
+        <p class="text-muted">Login with your Google account or Mobile</p>
+        {% endif %}
+    </div>
+
+    <!-- Mobile Login Form (Primary) -->
+    <div class="card mb-4">
+        <div class="card-body p-4">
+            <h5 class="card-title mb-3 text-center">Login with Mobile Number</h5>
+            
+            <!-- PIN Login -->
+            <form action="{{ url_for('auth.login') }}" method="post" id="mobile-login-form">
+                <div class="form-group mb-3">
+                    <label for="mobile">Mobile Number</label>
+                    <input type="tel" class="form-control" id="mobile" name="mobile" placeholder="Enter your 10-digit mobile number" required pattern="[0-9]{10}">
+                </div>
+                <div class="form-group mb-3">
+                    <label for="pin">4-Digit PIN</label>
+                    <input type="password" class="form-control" id="pin" name="pin" placeholder="Enter your 4-digit PIN" required pattern="[0-9]{4}" maxlength="4">
+                    <div class="form-text text-end">
+                        <a href="{{ url_for('auth.forgot_pin') }}">Forgot PIN?</a>
+                    </div>
+                </div>
+                
+                <div class="d-grid gap-2 mt-4">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-mobile-alt me-2"></i> Login with PIN
+                    </button>
+                </div>
+            </form>
+            
+            <div class="text-center my-3">
+                <p class="text-muted">Or login with OTP</p>
+            </div>
+            
+            <!-- OTP Login -->
+            <div class="d-grid gap-2">
+                <a href="{{ url_for('auth.verify_phone') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-key me-2"></i> Login with OTP
+                </a>
+            </div>
+            
+            <div id="form-status" class="alert mt-3" style="display: none;"></div>
+        </div>
+    </div>
+    
+    <!-- Google Sign-In Button (Secondary) -->
+    <div class="card mb-4">
+        <div class="card-body p-4 text-center">
+            <h5 class="card-title mb-3">Or Use Google Sign-In</h5>
+            <p class="text-muted mb-4">For a quick login without using PIN</p>
+            
+            <div class="d-grid gap-2">
+                <button id="google-sign-in-btn" class="btn btn-light btn-lg border">
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" width="24" height="24" class="me-2">
+                    <strong>Sign in with Google</strong>
+                </button>
+            </div>
+            
+            <div id="loading-indicator" class="text-center mt-3 d-none">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="text-muted mt-2">Signing in with Google...</p>
+            </div>
+        </div>
+    </div>
+
+    {% if request.args.get('admin') != '1' %}
+    <div class="auth-links text-center mt-3">
+        <p>Don't have an account? Just sign in with Google or Mobile and we'll create one for you!</p>
+        {% if referral %}
+        <p class="text-success"><i class="fas fa-gift me-1"></i> You've been referred! You'll get premium features when you sign up.</p>
+        {% endif %}
+    </div>
+
+    <div class="text-center mt-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title mb-3">Why Join KalyanX?</h5>
+                <div class="row">
+                    <div class="col-6">
+                        <div class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> 7-Day Free Trial</div>
+                        <div class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> ML Predictions</div>
+                    </div>
+                    <div class="col-6">
+                        <div class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Premium Forum</div>
+                        <div class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Push Notifications</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="text-center mt-3">
+        <p class="text-muted small">Administrative access is restricted to authorized personnel only.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Login specific JavaScript -->
+<script src="{{ url_for('static', filename='js/login.js') }}"></script>
+{% endblock %}

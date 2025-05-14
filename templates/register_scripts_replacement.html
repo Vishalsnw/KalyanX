@@ -1,0 +1,96 @@
+{% block scripts %}
+<!-- Authentication Scripts -->
+<script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Form validation
+    const registerForm = document.getElementById('register-form');
+    const emailInput = document.getElementById('email');
+    const mobileInput = document.getElementById('mobile');
+    const pinInputs = document.querySelectorAll('input[name="pin"]');
+    const confirmPinInputs = document.querySelectorAll('input[id$="confirm_pin"]');
+    const referralLink = document.getElementById('have-referral-link');
+    const referralSection = document.getElementById('referral-section');
+    
+    // Handle referral link
+    if (referralLink) {
+      referralLink.addEventListener('click', function(e) {
+        e.preventDefault();
+        referralSection.classList.remove('d-none');
+      });
+    }
+    
+    // Validate form on submit
+    if (registerForm) {
+      registerForm.addEventListener('submit', function(e) {
+        // Get the active tab
+        const activeTab = document.querySelector('.nav-link.active');
+        let isValid = true;
+        
+        if (activeTab && activeTab.id === 'email-tab') {
+          // Email tab validation
+          if (!emailInput.value.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.value.trim())) {
+            emailInput.classList.add('is-invalid');
+            emailInput.nextElementSibling.textContent = 'Please enter a valid email address';
+            isValid = false;
+          } else {
+            emailInput.classList.remove('is-invalid');
+          }
+          
+          // Validate PIN
+          const pinInput = document.getElementById('pin');
+          const confirmPinInput = document.getElementById('confirm_pin');
+          
+          if (!pinInput.value.trim() || pinInput.value.length !== 4 || !/^\d{4}$/.test(pinInput.value)) {
+            pinInput.classList.add('is-invalid');
+            isValid = false;
+          } else {
+            pinInput.classList.remove('is-invalid');
+          }
+          
+          if (pinInput.value !== confirmPinInput.value) {
+            confirmPinInput.classList.add('is-invalid');
+            confirmPinInput.nextElementSibling.textContent = 'PINs do not match';
+            isValid = false;
+          } else {
+            confirmPinInput.classList.remove('is-invalid');
+          }
+        } else if (activeTab && activeTab.id === 'mobile-tab') {
+          // Mobile tab validation
+          if (!mobileInput.value.trim() || !/^\d{10}$/.test(mobileInput.value.trim())) {
+            mobileInput.classList.add('is-invalid');
+            mobileInput.nextElementSibling.textContent = 'Please enter a valid 10-digit mobile number';
+            isValid = false;
+          } else {
+            mobileInput.classList.remove('is-invalid');
+          }
+          
+          // Validate PIN
+          const pinInput = document.getElementById('mobile_pin');
+          const confirmPinInput = document.getElementById('mobile_confirm_pin');
+          
+          if (!pinInput.value.trim() || pinInput.value.length !== 4 || !/^\d{4}$/.test(pinInput.value)) {
+            pinInput.classList.add('is-invalid');
+            isValid = false;
+          } else {
+            pinInput.classList.remove('is-invalid');
+          }
+          
+          if (pinInput.value !== confirmPinInput.value) {
+            confirmPinInput.classList.add('is-invalid');
+            confirmPinInput.nextElementSibling.textContent = 'PINs do not match';
+            isValid = false;
+          } else {
+            confirmPinInput.classList.remove('is-invalid');
+          }
+        }
+        
+        if (!isValid) {
+          e.preventDefault();
+        }
+      });
+    }
+  });
+</script>
+{% endblock %}

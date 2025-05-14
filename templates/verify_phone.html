@@ -1,0 +1,400 @@
+{% extends 'base.html' %}
+
+{% block title %}Verify Phone - KalyanX{% endblock %}
+
+{% block head_extra %}
+<meta name="robots" content="noindex, nofollow">
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="text-center mb-4">
+        <div class="auth-logo">
+            <i class="fas fa-dice-d20 text-danger"></i>
+        </div>
+        <h1 class="h3 mb-3 fw-normal">Verify Your Phone Number</h1>
+        <p class="text-muted">We'll send you a verification code via SMS</p>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body p-4">
+            <h5 class="card-title mb-3 text-center">Phone Verification</h5>
+            
+            <!-- Phone number input -->
+            <div id="phone-input-container">
+                <div class="form-group mb-3">
+                    <label for="phone-number">Phone Number</label>
+                    <div class="input-group">
+                        <span class="input-group-text">+91</span>
+                        <input type="tel" class="form-control" id="phone-number" placeholder="Enter 10-digit mobile number" required pattern="[0-9]{10}" maxlength="10">
+                    </div>
+                    <div class="form-text">We'll send a verification code to this number</div>
+                </div>
+                
+                <div class="d-grid gap-2 mt-4">
+                    <button id="send-code-btn" class="btn btn-primary btn-lg">
+                        <i class="fas fa-mobile-alt me-2"></i> Send Verification Code
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Verification code input -->
+            <div id="verification-code-container" style="display: none;">
+                <p class="text-center mb-3">Enter the 6-digit verification code sent to <span id="display-phone"></span></p>
+                
+                <div class="mb-3">
+                    <div class="otp-input-container d-flex justify-content-center">
+                        <input type="text" class="form-control otp-input text-center mx-1" maxlength="1" placeholder="" data-index="0">
+                        <input type="text" class="form-control otp-input text-center mx-1" maxlength="1" placeholder="" data-index="1">
+                        <input type="text" class="form-control otp-input text-center mx-1" maxlength="1" placeholder="" data-index="2">
+                        <input type="text" class="form-control otp-input text-center mx-1" maxlength="1" placeholder="" data-index="3">
+                        <input type="text" class="form-control otp-input text-center mx-1" maxlength="1" placeholder="" data-index="4">
+                        <input type="text" class="form-control otp-input text-center mx-1" maxlength="1" placeholder="" data-index="5">
+                    </div>
+                </div>
+                
+                <div class="text-center mb-3">
+                    <div id="countdown-timer" class="text-muted"></div>
+                    <button id="resend-code-btn" class="btn btn-link btn-sm" style="display: none;">Resend Code</button>
+                </div>
+                
+                <div class="d-grid gap-2 mt-4">
+                    <button id="verify-code-btn" class="btn btn-primary btn-lg">
+                        <i class="fas fa-check-circle me-2"></i> Verify Code
+                    </button>
+                </div>
+            </div>
+            
+            <div id="status-message" class="alert mt-3" style="display: none;"></div>
+            
+            <!-- Loading spinner -->
+            <div id="loading-indicator" class="text-center my-4" style="display: none;">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="text-muted mt-2">Please wait...</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="auth-links text-center mt-3">
+        <p>Already have an account? <a href="{{ url_for('auth.login') }}">Login</a></p>
+        {% if referral %}
+        <p class="text-success"><i class="fas fa-gift me-1"></i> You've been referred! You'll get premium features when you sign up.</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Hidden field for referral code -->
+{% if referral %}
+<input type="hidden" id="referral-code" value="{{ referral }}">
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<!-- Firebase Phone Auth script -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // DOM Elements
+    const phoneInputContainer = document.getElementById('phone-input-container');
+    const verificationCodeContainer = document.getElementById('verification-code-container');
+    const phoneNumberInput = document.getElementById('phone-number');
+    const displayPhone = document.getElementById('display-phone');
+    const sendCodeBtn = document.getElementById('send-code-btn');
+    const verifyCodeBtn = document.getElementById('verify-code-btn');
+    const resendCodeBtn = document.getElementById('resend-code-btn');
+    const countdownTimer = document.getElementById('countdown-timer');
+    const statusMessage = document.getElementById('status-message');
+    const loadingIndicator = document.getElementById('loading-indicator');
+    const otpInputs = document.querySelectorAll('.otp-input');
+    const referralCodeInput = document.getElementById('referral-code');
+
+    // Firebase configuration
+    const firebaseConfig = {
+        apiKey: "{{ firebase_api_key }}",
+        projectId: "{{ firebase_project_id }}",
+        appId: "{{ firebase_app_id }}",
+    };
+
+    // Initialize Firebase
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
+
+    let verificationId = null;
+    let recaptchaVerifier = null;
+    let resendTimer = null;
+    let phoneNumber = null;
+
+    // Setup reCAPTCHA verifier
+    function setupRecaptcha() {
+        // Clear any existing instance
+        if (recaptchaVerifier) {
+            recaptchaVerifier.clear();
+        }
+
+        // Create new instance
+        recaptchaVerifier = new firebase.auth.RecaptchaVerifier('send-code-btn', {
+            'size': 'invisible',
+            'callback': (response) => {
+                // reCAPTCHA solved, allow sending the code
+                sendVerificationCode();
+            },
+            'expired-callback': () => {
+                // Response expired. Ask user to solve reCAPTCHA again.
+                showStatus('reCAPTCHA expired. Please try again.', 'warning');
+                recaptchaVerifier.clear();
+                setupRecaptcha();
+            }
+        });
+
+        recaptchaVerifier.render().then(function(widgetId) {
+            window.recaptchaWidgetId = widgetId;
+        });
+    }
+
+    // Show status message
+    function showStatus(message, type = 'danger') {
+        statusMessage.textContent = message;
+        statusMessage.className = `alert alert-${type} mt-3`;
+        statusMessage.style.display = 'block';
+    }
+
+    // Hide status message
+    function hideStatus() {
+        statusMessage.style.display = 'none';
+    }
+
+    // Show loading indicator
+    function showLoading() {
+        loadingIndicator.style.display = 'block';
+    }
+
+    // Hide loading indicator
+    function hideLoading() {
+        loadingIndicator.style.display = 'none';
+    }
+
+    // Validate phone number
+    function isValidPhoneNumber(phone) {
+        return /^[0-9]{10}$/.test(phone);
+    }
+
+    // Start countdown timer for resend code
+    function startResendTimer(seconds = 60) {
+        let remainingTime = seconds;
+        countdownTimer.textContent = `Resend code in ${remainingTime} seconds`;
+        countdownTimer.style.display = 'block';
+        resendCodeBtn.style.display = 'none';
+
+        clearInterval(resendTimer);
+        resendTimer = setInterval(() => {
+            remainingTime--;
+            countdownTimer.textContent = `Resend code in ${remainingTime} seconds`;
+
+            if (remainingTime <= 0) {
+                clearInterval(resendTimer);
+                countdownTimer.style.display = 'none';
+                resendCodeBtn.style.display = 'block';
+            }
+        }, 1000);
+    }
+
+    // Send verification code
+    function sendVerificationCode() {
+        const rawPhoneNumber = phoneNumberInput.value.trim();
+        
+        if (!isValidPhoneNumber(rawPhoneNumber)) {
+            showStatus('Please enter a valid 10-digit mobile number', 'warning');
+            return;
+        }
+
+        phoneNumber = `+91${rawPhoneNumber}`;
+        displayPhone.textContent = phoneNumber;
+        hideStatus();
+        showLoading();
+
+        firebase.auth().signInWithPhoneNumber(phoneNumber, recaptchaVerifier)
+            .then((confirmationResult) => {
+                // SMS sent. Prompt user to type the code
+                verificationId = confirmationResult.verificationId;
+                
+                // Hide phone input, show verification code input
+                phoneInputContainer.style.display = 'none';
+                verificationCodeContainer.style.display = 'block';
+                
+                // Start resend timer
+                startResendTimer();
+                
+                // Focus on first OTP input
+                otpInputs[0].focus();
+                
+                hideLoading();
+                showStatus('Verification code sent!', 'success');
+            })
+            .catch((error) => {
+                console.error('Error sending verification code:', error);
+                hideLoading();
+                
+                let errorMessage = 'Failed to send verification code. Please try again.';
+                if (error.code === 'auth/invalid-phone-number') {
+                    errorMessage = 'Invalid phone number format.';
+                } else if (error.code === 'auth/too-many-requests') {
+                    errorMessage = 'Too many attempts. Please try again later.';
+                }
+                
+                showStatus(errorMessage, 'danger');
+                
+                // Reset reCAPTCHA
+                recaptchaVerifier.clear();
+                setupRecaptcha();
+            });
+    }
+
+    // Verify the code entered by user
+    function verifyCode() {
+        // Get verification code from inputs
+        let code = '';
+        otpInputs.forEach(input => {
+            code += input.value;
+        });
+
+        if (code.length !== 6) {
+            showStatus('Please enter the complete 6-digit verification code', 'warning');
+            return;
+        }
+
+        hideStatus();
+        showLoading();
+
+        // Create credential
+        const credential = firebase.auth.PhoneAuthProvider.credential(verificationId, code);
+        
+        // Sign in with credential
+        firebase.auth().signInWithCredential(credential)
+            .then((result) => {
+                // User signed in successfully
+                return result.user.getIdToken();
+            })
+            .then((idToken) => {
+                // Send token and phone number to server
+                const referral = referralCodeInput ? referralCodeInput.value : null;
+                
+                return fetch('{{ url_for("auth.firebase_phone_verified") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        idToken: idToken,
+                        phoneNumber: phoneNumber,
+                        uid: firebase.auth().currentUser.uid,
+                        referral: referral
+                    })
+                });
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideLoading();
+                
+                if (data.success) {
+                    showStatus(data.message || 'Phone verified successfully!', 'success');
+                    setTimeout(() => {
+                        window.location.href = data.redirect;
+                    }, 1500);
+                } else {
+                    throw new Error(data.message || 'Verification failed');
+                }
+            })
+            .catch((error) => {
+                console.error('Error verifying code:', error);
+                hideLoading();
+                
+                let errorMessage = 'Failed to verify code. Please try again.';
+                if (error.code === 'auth/invalid-verification-code') {
+                    errorMessage = 'Invalid verification code. Please check and try again.';
+                } else if (error.code === 'auth/code-expired') {
+                    errorMessage = 'Verification code has expired. Please request a new one.';
+                } else if (error.message) {
+                    errorMessage = error.message;
+                }
+                
+                showStatus(errorMessage, 'danger');
+            });
+    }
+
+    // Setup OTP input behavior
+    otpInputs.forEach((input, index) => {
+        // Handle input
+        input.addEventListener('input', function(e) {
+            // Only allow digits
+            this.value = this.value.replace(/\D/g, '');
+            
+            // Auto-advance to next input
+            if (this.value && index < otpInputs.length - 1) {
+                otpInputs[index + 1].focus();
+            }
+            
+            // Check if all inputs are filled
+            const allFilled = Array.from(otpInputs).every(input => input.value.length === 1);
+            if (allFilled) {
+                verifyCodeBtn.focus();
+            }
+        });
+        
+        // Handle backspace
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Backspace' && !this.value && index > 0) {
+                otpInputs[index - 1].focus();
+            }
+        });
+        
+        // Handle paste
+        input.addEventListener('paste', function(e) {
+            e.preventDefault();
+            const pastedData = (e.clipboardData || window.clipboardData).getData('text');
+            
+            if (/^\d+$/.test(pastedData) && pastedData.length <= otpInputs.length) {
+                for (let i = 0; i < pastedData.length; i++) {
+                    if (index + i < otpInputs.length) {
+                        otpInputs[index + i].value = pastedData[i];
+                    }
+                }
+                
+                // Focus on the next empty input or the verify button
+                const nextEmptyIndex = Array.from(otpInputs).findIndex(input => !input.value);
+                if (nextEmptyIndex !== -1) {
+                    otpInputs[nextEmptyIndex].focus();
+                } else {
+                    verifyCodeBtn.focus();
+                }
+            }
+        });
+    });
+
+    // Event Listeners
+    sendCodeBtn.addEventListener('click', function() {
+        if (!recaptchaVerifier) {
+            setupRecaptcha();
+        }
+        recaptchaVerifier.verify();
+    });
+
+    verifyCodeBtn.addEventListener('click', verifyCode);
+
+    resendCodeBtn.addEventListener('click', function() {
+        // Reset OTP inputs
+        otpInputs.forEach(input => input.value = '');
+        
+        // Setup new reCAPTCHA
+        setupRecaptcha();
+        
+        // Send new code
+        recaptchaVerifier.verify();
+    });
+
+    // Initialize
+    setupRecaptcha();
+});
+</script>
+{% endblock %}

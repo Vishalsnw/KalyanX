@@ -1,0 +1,176 @@
+{% extends 'admin_base.html' %}
+
+{% block title %}Firebase Users Management{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Firebase Users Management</h1>
+    </div>
+
+    {% if error_message %}
+    <div class="alert alert-danger">
+        {{ error_message }}
+    </div>
+    {% endif %}
+
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Search Firebase Users</h5>
+        </div>
+        <div class="card-body">
+            <form action="{{ url_for('admin.firebase_users') }}" method="get" class="mb-3">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-3">
+                        <label for="search_type" class="form-label">Search By</label>
+                        <select name="search_type" id="search_type" class="form-select">
+                            <option value="email" {% if search_type == 'email' %}selected{% endif %}>Email</option>
+                            <option value="uid" {% if search_type == 'uid' %}selected{% endif %}>User ID</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="search_term" class="form-label">Search Term</label>
+                        <input type="text" name="search_term" id="search_term" class="form-control" value="{{ search_term }}" placeholder="Enter email or user ID" required>
+                    </div>
+                    <div class="col-md-3">
+                        <button type="submit" class="btn btn-primary w-100">Search</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if user_data %}
+    <div class="card mb-4">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0">User Details</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-8">
+                    <dl class="row">
+                        <dt class="col-sm-4">User ID</dt>
+                        <dd class="col-sm-8">{{ user_data.uid }}</dd>
+
+                        <dt class="col-sm-4">Email</dt>
+                        <dd class="col-sm-8">{{ user_data.email }}</dd>
+
+                        <dt class="col-sm-4">Display Name</dt>
+                        <dd class="col-sm-8">{{ user_data.displayName or 'Not set' }}</dd>
+
+                        <dt class="col-sm-4">Email Verified</dt>
+                        <dd class="col-sm-8">
+                            {% if user_data.emailVerified %}
+                            <span class="badge bg-success">Verified</span>
+                            {% else %}
+                            <span class="badge bg-warning">Not Verified</span>
+                            {% endif %}
+                        </dd>
+
+                        <dt class="col-sm-4">Created</dt>
+                        <dd class="col-sm-8">{{ (user_data.creationTime / 1000)|int|timestamp_to_date }}</dd>
+
+                        <dt class="col-sm-4">Last Sign In</dt>
+                        <dd class="col-sm-8">{{ (user_data.lastSignInTime / 1000)|int|timestamp_to_date }}</dd>
+
+                        <dt class="col-sm-4">Premium Status</dt>
+                        <dd class="col-sm-8">
+                            {% if user_data.premiumActive %}
+                            <span class="badge bg-success">Premium Active</span>
+                            {% elif user_data.isPremium %}
+                            <span class="badge bg-warning">Premium Expired</span>
+                            {% else %}
+                            <span class="badge bg-secondary">Not Premium</span>
+                            {% endif %}
+                        </dd>
+
+                        {% if user_data.premiumExpiryDate %}
+                        <dt class="col-sm-4">Expiry Date</dt>
+                        <dd class="col-sm-8">{{ (user_data.premiumExpiryDate / 1000)|int|timestamp_to_date }}</dd>
+                        {% endif %}
+                    </dl>
+                </div>
+                <div class="col-md-4 d-flex align-items-center justify-content-center">
+                    {% if user_data.photoURL %}
+                    <img src="{{ user_data.photoURL }}" alt="{{ user_data.displayName or user_data.email }}" class="img-fluid rounded-circle" style="max-height: 150px;">
+                    {% else %}
+                    <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 150px; height: 150px; font-size: 3rem;">
+                        {{ (user_data.displayName or user_data.email or '?')[0]|upper }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <h5 class="mb-3">Manage Premium Status</h5>
+            <form action="{{ url_for('admin.firebase_users') }}" method="post" class="row g-3">
+                <input type="hidden" name="uid" value="{{ user_data.uid }}">
+                <div class="col-md-4">
+                    <select name="is_premium" class="form-select">
+                        <option value="true" {% if user_data.isPremium %}selected{% endif %}>Premium</option>
+                        <option value="false" {% if not user_data.isPremium %}selected{% endif %}>Free</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <span class="input-group-text">Duration</span>
+                        <input type="number" name="months" class="form-control" value="1" min="1" max="12">
+                        <span class="input-group-text">month(s)</span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-primary w-100">Update Status</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Recent Premium Users -->
+    <div class="card">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0">Recent Premium Users</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>User ID</th>
+                            <th>Email</th>
+                            <th>Name</th>
+                            <th>Premium Status</th>
+                            <th>Expiry Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in premium_users %}
+                        <tr>
+                            <td>{{ user.uid|truncate(10, true) }}</td>
+                            <td>{{ user.email }}</td>
+                            <td>{{ user.displayName or 'Not set' }}</td>
+                            <td>
+                                {% if user.premiumActive %}
+                                <span class="badge bg-success">Active</span>
+                                {% else %}
+                                <span class="badge bg-warning">Expired</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ (user.premiumExpiryDate / 1000)|int|timestamp_to_date }}</td>
+                            <td>
+                                <a href="{{ url_for('admin.firebase_users', search_type='uid', search_term=user.uid) }}" class="btn btn-sm btn-outline-primary">View</a>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center py-3">No premium users found</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

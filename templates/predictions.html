@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% from 'macros/prediction_macros.html' import render_prediction_card %}
+
+{% block title %}Predictions - KalyanX{% endblock %}
+
+{% block head_extra %}
+<meta name="description" content="KalyanX - Premium Satta Matka predictions for all markets">
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-lg-8">
+        <h1 class="h3 mb-4"><i class="fas fa-chart-line me-2"></i> Premium Predictions</h1>
+    </div>
+    <div class="col-lg-4">
+        <div class="d-flex justify-content-lg-end mb-3">
+            <div class="me-2">
+                <select id="date-selector" class="form-select">
+                    <option value="">Select Date</option>
+                    {% for date_str in date_range %}
+                    <option value="{{ date_str }}" {% if selected_date.strftime('%Y-%m-%d') == date_str %}selected{% endif %}>
+                        {{ date_str }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <select id="market-selector" class="form-select">
+                    <option value="">All Markets</option>
+                    {% for market_name in markets %}
+                    <option value="{{ market_name }}" {% if selected_market == market_name %}selected{% endif %}>
+                        {{ market_name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if not current_user.has_access and not g.has_premium_access %}
+<div class="alert alert-warning mb-4">
+    <h5><i class="fas fa-lock me-2"></i> Premium Feature</h5>
+    <p>Predictions are available only for premium members or during your free trial period.</p>
+    <a href="https://t.me/kxpred" target="_blank" class="btn btn-warning">
+        <i class="fab fa-telegram me-2"></i> Upgrade to Premium
+    </a>
+</div>
+{% else %}
+
+<div class="row">
+    {% if predictions %}
+        {% for prediction in predictions %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            {{ render_prediction_card(prediction, results.get(prediction.market), matched_predictions.get(prediction.market, {})) }}
+        </div>
+        {% endfor %}
+    {% else %}
+    <div class="col-12">
+        <div class="alert alert-info">
+            <h5><i class="fas fa-info-circle me-2"></i> No predictions available</h5>
+            <p>There are no predictions available for the selected date or market. Please select a different date or market.</p>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<div class="card mt-4">
+    <div class="card-header bg-dark">
+        <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i> Understanding Our Predictions</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <h6><i class="fas fa-dice me-2 text-danger"></i> Open & Close Digits</h6>
+                <p>Our predictions show the most likely first and last digits for open and close positions. For example, "3X7" means the first digit is likely to be 3 and the last digit is likely to be 7, with any middle digit.</p>
+
+                <h6><i class="fas fa-chart-bar me-2 text-danger"></i> Jodi Predictions</h6>
+                <p>We provide the top 10 most probable Jodi combinations ranked by our ML algorithm. These are the two-digit combinations most likely to appear in results.</p>
+            </div>
+            <div class="col-md-6">
+                <h6><i class="fas fa-calculator me-2 text-danger"></i> Patti Predictions</h6>
+                <p>Our algorithms generate the most likely 3-digit numbers (pattis) that might appear in the results, based on historical patterns and mathematical models.</p>
+
+                <h6><i class="fas fa-trophy me-2 text-danger"></i> Match Highlights</h6>
+                <p>When our predictions match actual results, they're highlighted with a glowing effect and a "Match!" badge. These indicate successful predictions.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/predictions.js') }}"></script>
+{% endblock %}

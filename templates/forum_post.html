@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+{% from 'macros/forum_macros.html' import render_comment %}
+
+{% block title %}{{ post.title }} - KalyanX Forum{% endblock %}
+
+{% block head_extra %}
+<meta name="description" content="{{ post.content|truncate(150, True) }}">
+{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ url_for('forum.index') }}">Forum</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('forum.category', category_id=post.category_id) }}">{{ post.category.name }}</a></li>
+        <li class="breadcrumb-item active" aria-current="page">{{ post.title|truncate(30, True) }}</li>
+    </ol>
+</nav>
+
+<div class="card mb-4">
+    <div class="card-header bg-dark">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">{{ post.title }}</h5>
+            <div>
+                <span class="badge bg-secondary">{{ post.category.name }}</span>
+                <span class="badge bg-secondary ms-1">{{ post.views }} views</span>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="d-flex mb-4">
+            <div class="user-info me-3">
+                <i class="fas fa-user-circle fa-3x text-secondary"></i>
+            </div>
+            <div>
+                <div class="fw-bold">{{ post.user.mobile[:6] }}XXXX</div>
+                <div class="small text-muted forum-date" data-date="{{ post.created_at }}">
+                    {{ post.created_at.strftime('%d/%m/%Y %H:%M') }}
+                    {% if post.updated_at > post.created_at %}
+                        <span class="ms-2">(Edited)</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="post-content mb-4">
+            {{ post.content|safe }}
+        </div>
+        
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <button class="btn btn-sm btn-outline-secondary" onclick="quotePost()">
+                    <i class="fas fa-quote-right me-1"></i> Quote
+                </button>
+            </div>
+            <div>
+                <button class="btn btn-sm btn-outline-primary" onclick="sharePost({{ post.id }}, '{{ post.title }}')">
+                    <i class="fas fa-share-alt me-1"></i> Share
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header bg-dark">
+        <h5 class="mb-0"><i class="fas fa-comments me-2"></i> Comments ({{ comments|length }})</h5>
+    </div>
+    <div class="card-body">
+        {% if comments %}
+            {% for comment in comments %}
+                {{ render_comment(comment) }}
+                {% if not loop.last %}<hr>{% endif %}
+            {% endfor %}
+        {% else %}
+            <div class="text-center py-4">
+                <div class="mb-3"><i class="fas fa-comment-slash fa-2x text-muted"></i></div>
+                <p class="text-muted mb-0">No comments yet. Be the first to comment!</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-dark">
+        <h5 class="mb-0"><i class="fas fa-reply me-2"></i> Add Comment</h5>
+    </div>
+    <div class="card-body">
+        <form id="comment-form" action="{{ url_for('forum.create_comment_route', post_id=post.id) }}" method="post">
+            <div class="mb-3">
+                <textarea class="form-control" id="content" name="content" rows="4" placeholder="Write your comment here..." required></textarea>
+            </div>
+            <div class="d-grid">
+                <button type="submit" class="btn btn-primary">Post Comment</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/forum.js') }}"></script>
+<script>
+    function quotePost() {
+        const postContent = document.querySelector('.post-content').textContent.trim();
+        const postAuthor = document.querySelector('.user-info + div .fw-bold').textContent.trim();
+        const quotedText = `> **${postAuthor} wrote:**\n> ${postContent.substring(0, 200)}${postContent.length > 200 ? '...' : ''}\n\n`;
+        
+        const commentTextarea = document.getElementById('content');
+        commentTextarea.value = quotedText + commentTextarea.value;
+        commentTextarea.focus();
+        commentTextarea.scrollIntoView({ behavior: 'smooth' });
+    }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        // Format dates
+        formatForumDates();
+    });
+</script>
+{% endblock %}

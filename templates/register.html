@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+
+{% block title %}Register - KalyanX{% endblock %}
+
+{% block head_extra %}
+<meta name="robots" content="noindex, nofollow">
+<!-- Firebase is now loaded in the base template -->
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="text-center mb-4">
+        <div class="auth-logo">
+            <i class="fas fa-dice-d20 text-danger"></i>
+        </div>
+        <h1 class="h3 mb-3 fw-normal">Create Your KalyanX Account</h1>
+        <p class="text-muted">Register to get 7-day free premium access</p>
+    </div>
+
+    <!-- Mobile Registration Card (Primary) -->
+    <div class="card mb-4">
+        <div class="card-body p-4">
+            <h5 class="card-title mb-3 text-center">Register with Mobile Number</h5>
+            
+            <div class="d-grid gap-2 mt-4">
+                <a href="{{ url_for('auth.verify_phone', referral=referral) }}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-mobile-alt me-2"></i> Verify with Phone Number
+                </a>
+            </div>
+            
+            <div class="text-center mt-3">
+                <small class="text-muted">We'll verify your phone number using Firebase authentication</small>
+            </div>
+            
+            <div class="mt-4 text-center">
+                <p class="text-muted">By registering, you agree to our <a href="{{ url_for('static.terms') }}">Terms</a> and <a href="{{ url_for('static.privacy') }}">Privacy Policy</a></p>
+            </div>
+            
+            {% if referral %}
+            <div class="alert alert-info mt-3">
+                <i class="fas fa-gift me-2"></i> You're signing up with a referral code! You'll get additional benefits.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Google Sign-In Registration Card (Secondary) -->
+    <div class="card mb-4">
+        <div class="card-body p-4 text-center">
+            <h5 class="card-title mb-3">Or Use Google Sign-In</h5>
+            <p class="text-muted mb-4">For a quick registration without OTP verification</p>
+            
+            <div class="d-grid gap-2">
+                <button id="google-sign-in-btn" class="btn btn-light btn-lg border">
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" width="24" height="24" class="me-2">
+                    <strong>Sign in with Google</strong>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="auth-links text-center mt-3">
+        <p>Already have an account? <a href="{{ url_for('auth.login') }}">Login</a></p>
+    </div>
+    
+    <div class="text-center mt-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title mb-3">What You'll Get</h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Daily Predictions</div>
+                        <div class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Open & Close Digits</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> 10 Jodi Combinations</div>
+                        <div class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> 4 Patti Combinations</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Firebase Auth JS -->
+<script src="{{ url_for('static', filename='js/firebase-auth.js') }}"></script>
+<!-- Login and Registration Scripts -->
+<script src="{{ url_for('static', filename='js/login.js') }}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize Firebase if not already done
+        initFirebase();
+        
+        // Get the mobile button
+        const mobileBtn = document.getElementById('continue-mobile-btn');
+        const mobileInput = document.getElementById('mobile');
+        
+        // Handle mobile registration
+        mobileBtn.addEventListener('click', function() {
+            const mobile = mobileInput.value.trim();
+            
+            // Validate mobile number
+            if (!mobile || !mobile.match(/^\d{10}$/)) {
+                alert('Please enter a valid 10-digit mobile number');
+                return;
+            }
+            
+            // Get referral code if available
+            const referralCode = document.getElementById('referral')?.value || '';
+            
+            // Redirect to phone verification page with mobile number
+            const redirectUrl = `/auth/verify-phone${referralCode ? '?referral=' + referralCode : ''}`;
+            
+            // Store the phone number in session storage for the verification page
+            sessionStorage.setItem('registrationPhone', mobile);
+            
+            // Redirect to verification page
+            window.location.href = redirectUrl;
+        });
+    });
+</script>
+{% endblock %}

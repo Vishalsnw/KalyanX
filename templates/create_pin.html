@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block title %}Create PIN - KalyanX{% endblock %}
+
+{% block head_extra %}
+<meta name="robots" content="noindex, nofollow">
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="text-center mb-4">
+        <div class="auth-logo">
+            <i class="fas fa-dice-d20 text-danger"></i>
+        </div>
+        <h1 class="h3 mb-3 fw-normal">Create Your 4-Digit PIN</h1>
+        <p class="text-muted">This PIN will be used for quick login</p>
+    </div>
+
+    <div class="card">
+        <div class="card-body p-4">
+            <form id="pin-form" method="post" action="{% if email %}{{ url_for('auth.create_email_pin') }}{% else %}{{ url_for('auth.create_pin') }}{% endif %}">
+                <div class="mb-3">
+                    <label for="pin" class="form-label">4-Digit PIN</label>
+                    <input type="password" class="form-control" id="pin" name="pin" placeholder="Enter a 4-digit PIN" maxlength="4" pattern="[0-9]{4}" inputmode="numeric" required>
+                    <div class="invalid-feedback"></div>
+                    <small class="form-text text-muted">Choose a 4-digit PIN you can easily remember</small>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="confirm_pin" class="form-label">Confirm PIN</label>
+                    <input type="password" class="form-control" id="confirm_pin" name="confirm_pin" placeholder="Confirm your PIN" maxlength="4" pattern="[0-9]{4}" inputmode="numeric" required>
+                    <div class="invalid-feedback"></div>
+                </div>
+                
+                {% if email %}
+                <div class="mb-4">
+                    <label for="mobile" class="form-label">Mobile Number (Optional)</label>
+                    <div class="input-group">
+                        <span class="input-group-text">+91</span>
+                        <input type="text" class="form-control" id="mobile" name="mobile" placeholder="Enter your mobile number (optional)" maxlength="10" pattern="[6-9][0-9]{9}">
+                        <div class="invalid-feedback"></div>
+                    </div>
+                    <small class="form-text text-muted">Add your mobile for SMS notifications (optional)</small>
+                </div>
+                {% endif %}
+                
+                <div class="d-grid">
+                    <button class="btn btn-gambling btn-lg" type="submit">Create PIN & Complete Registration</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div class="auth-links text-center mt-3">
+        <p><a href="{% if email %}{{ url_for('auth.verify_email_otp_route') }}{% else %}{{ url_for('auth.verify_otp_route') }}{% endif %}"><i class="fas fa-arrow-left me-1"></i> Back to OTP Verification</a></p>
+    </div>
+    
+    <div class="text-center mt-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Welcome to KalyanX!</h5>
+                <p class="card-text">You're almost there. Create your PIN to secure your account and access our premium predictions instantly!</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+{% endblock %}

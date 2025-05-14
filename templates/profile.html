@@ -1,0 +1,407 @@
+{% extends 'base.html' %}
+
+{% block title %}Profile - KalyanX{% endblock %}
+
+{% block head_extra %}
+<meta name="robots" content="noindex, nofollow">
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-lg-8">
+        <h1 class="h3 mb-0"><i class="fas fa-user-circle me-2"></i> Your Profile</h1>
+    </div>
+    <div class="col-lg-4 text-lg-end">
+        <a href="{{ url_for('subscription.plans') }}" class="btn btn-outline-primary"><i class="fas fa-crown me-1"></i> Subscription</a>
+        <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-danger ms-2"><i class="fas fa-sign-out-alt me-1"></i> Logout</a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-4 mb-4">
+        <div class="card">
+            <div class="card-header bg-dark">
+                <h5 class="mb-0"><i class="fas fa-id-card me-2"></i> Account Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label text-muted">Mobile Number</label>
+                    <div class="h5">{{ current_user.mobile }}</div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label text-muted">Account Status</label>
+                    <div>
+                        {% if current_user.is_premium %}
+                        <span class="badge bg-warning">Premium</span>
+                        {% elif current_user.is_trial_active %}
+                        <span class="badge bg-info">Trial</span>
+                        {% else %}
+                        <span class="badge bg-secondary">Free</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label text-muted">Firebase User ID</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" value="{{ current_user.firebase_uid }}" id="firebase-uid" readonly>
+                        <button class="btn btn-outline-secondary" type="button" onclick="copyToClipboard('firebase-uid')">
+                            <i class="fas fa-copy"></i> Copy
+                        </button>
+                    </div>
+                    <small class="text-muted">Use this ID to lookup your account status in admin panel</small>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label text-muted">Member Since</label>
+                    <div>{{ current_user.registration_date.strftime('%d %b %Y') }}</div>
+                </div>
+
+                <div>
+                    <label class="form-label text-muted">Last Login</label>
+                    <div>{{ current_user.last_login.strftime('%d %b %Y, %H:%M') if current_user.last_login else 'N/A' }}</div>
+                </div>
+                {% if current_user.firebase_uid %}
+                <p><strong>User ID:</strong> <span id="firebase-uid">{{ current_user.firebase_uid }}</span> 
+                    <button class="btn btn-sm btn-secondary" onclick="copyToClipboard('firebase-uid')">Copy</button>
+                </p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8 mb-4">
+        <div class="card mb-4">
+            <div class="card-header bg-dark">
+                <h5 class="mb-0"><i class="fas fa-crown me-2"></i> Subscription Details</h5>
+            </div>
+            <div class="card-body">
+                {% if current_user.is_premium %}
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span>Premium Subscription</span>
+                        <span class="badge bg-success">Active</span>
+                    </div>
+                    <div class="progress mb-2" style="height: 10px;">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: {{ (current_user.days_remaining / 30) * 100 }}%" aria-valuenow="{{ current_user.days_remaining }}" aria-valuemin="0" aria-valuemax="30"></div>
+                    </div>
+                    <div class="d-flex justify-content-between small text-muted">
+                        <span>{{ current_user.days_remaining }} days remaining</span>
+                        <span>Expires on {{ current_user.premium_end_date.strftime('%d %b %Y') }}</span>
+                    </div>
+                </div>
+
+                <div class="text-center">
+                    <a href="{{ url_for('subscription.checkout') }}" class="btn btn-success"><i class="fas fa-sync-alt me-1"></i> Renew Subscription</a>
+                    <a href="{{ url_for('subscription.history') }}" class="btn btn-outline-secondary ms-2"><i class="fas fa-history me-1"></i> View History</a>
+                </div>
+                {% elif current_user.is_trial_active %}
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span>Free Trial</span>
+                        <span class="badge bg-info">Active</span>
+                    </div>
+                    <div class="progress mb-2" style="height: 10px;">
+                        <div class="progress-bar bg-info" role="progressbar" style="width: {{ (current_user.days_remaining / 7) * 100 }}%" aria-valuenow="{{ current_user.days_remaining }}" aria-valuemin="0" aria-valuemax="7"></div>
+                    </div>
+                    <div class="d-flex justify-content-between small text-muted">
+                        <span>{{ current_user.days_remaining }} days remaining</span>
+                        <span>Expires on {{ current_user.trial_end_date.strftime('%d %b %Y') }}</span>
+                    </div>
+                </div>
+
+                <div class="alert alert-warning">
+                    <p class="mb-2"><i class="fas fa-exclamation-triangle me-2"></i> Your free trial will expire soon!</p>
+                    <p class="mb-0">Subscribe now to continue enjoying premium features without interruption.</p>
+                </div>
+
+                <div class="text-center">
+                    <a href="{{ url_for('subscription.plans') }}" class="btn btn-primary"><i class="fas fa-crown me-1"></i> Upgrade to Premium</a>
+                </div>
+                {% else %}
+                <div class="alert alert-danger mb-3">
+                    <p class="mb-2"><i class="fas fa-exclamation-circle me-2"></i> Your trial has expired!</p>
+                    <p class="mb-0">Subscribe now to regain access to premium features and predictions.</p>
+                </div>
+
+                <div class="text-center">
+                    <a href="{{ url_for('subscription.plans') }}" class="btn btn-danger"><i class="fas fa-crown me-1"></i> Upgrade to Premium</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header bg-dark">
+                <h5 class="mb-0"><i class="fas fa-bell me-2"></i> Notification Preferences</h5>
+            </div>
+            <div class="card-body">
+                <form id="notification-preferences-form">
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="enable-push" 
+                                {% if current_user.notification_preferences and current_user.notification_preferences.get('push_enabled') %}checked{% endif %}>
+                            <label class="form-check-label" for="enable-push">Enable Push Notifications</label>
+                        </div>
+                        <small class="form-text text-muted">Receive notifications when predictions match results</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Markets for Notifications</label>
+                        <div class="row">
+                            {% for market in ["Time Bazar", "Milan Day", "Kalyan", "Milan Night", "Main Bazar"] %}
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input class="form-check-input market-checkbox" type="checkbox" id="market-{{ market|lower|replace(' ', '-') }}" 
+                                        value="{{ market }}" 
+                                        {% if current_user.notification_preferences and market in current_user.notification_preferences.get('markets', []) %}checked{% endif %}>
+                                    <label class="form-check-label" for="market-{{ market|lower|replace(' ', '-') }}">
+                                        {{ market }}
+                                    </label>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <button type="button" id="save-preferences" class="btn btn-primary"><i class="fas fa-save me-1"></i> Save Preferences</button>
+                    <button type="button" id="enable-notifications" class="btn btn-outline-info d-none"><i class="fas fa-bell me-1"></i> Enable Browser Notifications</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header bg-dark">
+                <h5 class="mb-0"><i class="fas fa-user-plus me-2"></i> Refer & Earn</h5>
+            </div>
+            <div class="card-body">
+                <p>Share your referral code with friends and earn 1 month of free premium access for each successful referral!</p>
+
+                <div class="mb-3">
+                    <label class="form-label">Your Referral Code</label>
+                    <div class="referral-code mb-2" id="referral-code">{{ current_user.referral_code }}</div>
+                    <button id="copy-referral" class="btn btn-sm btn-outline-primary"><i class="fas fa-copy me-1"></i> Copy Code</button>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Your Referral Link</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" value="{{ request.host_url }}referral/{{ current_user.referral_code }}" id="referral-link" readonly>
+                        <button class="btn btn-outline-primary" id="copy-referral-link"><i class="fas fa-copy me-1"></i> Copy</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header bg-dark">
+                <h5 class="mb-0"><i class="fas fa-cog me-2"></i> Account Settings</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-4">
+                    <a href="#" class="btn btn-outline-secondary w-100 mb-2" data-bs-toggle="modal" data-bs-target="#changePinModal">
+                        <i class="fas fa-key me-1"></i> Change PIN
+                    </a>
+                    <small class="form-text text-muted d-block text-center">Update your 4-digit login PIN</small>
+                </div>
+
+                <div class="mb-4">
+                    <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-danger w-100 mb-2">
+                        <i class="fas fa-sign-out-alt me-1"></i> Logout
+                    </a>
+                    <small class="form-text text-muted d-block text-center">Sign out from your account</small>
+                </div>
+
+                <div>
+                    <button class="btn btn-outline-secondary w-100 mb-2" disabled>
+                        <i class="fas fa-trash-alt me-1"></i> Delete Account
+                    </button>
+                    <small class="form-text text-muted d-block text-center">Please contact support to delete your account</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Change PIN Modal -->
+<div class="modal fade" id="changePinModal" tabindex="-1" aria-labelledby="changePinModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="changePinModalLabel">Change PIN</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="change-pin-form">
+                    <div class="mb-3">
+                        <label for="current_pin" class="form-label">Current PIN</label>
+                        <input type="password" class="form-control" id="current_pin" maxlength="4" pattern="[0-9]{4}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="new_pin" class="form-label">New PIN</label>
+                        <input type="password" class="form-control" id="new_pin" maxlength="4" pattern="[0-9]{4}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="confirm_new_pin" class="form-label">Confirm New PIN</label>
+                        <input type="password" class="form-control" id="confirm_new_pin" maxlength="4" pattern="[0-9]{4}" required>
+                        <div class="invalid-feedback">PINs do not match</div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="change-pin-btn">Update PIN</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Copy referral code
+        const copyReferralBtn = document.getElementById('copy-referral');
+        if (copyReferralBtn) {
+            copyReferralBtn.addEventListener('click', function() {
+                const referralCode = document.getElementById('referral-code').textContent;
+                copyToClipboard(referralCode)
+                    .then(() => {
+                        showToast('Success', 'Referral code copied to clipboard!', 'success');
+                    })
+                    .catch(() => {
+                        showToast('Error', 'Failed to copy referral code', 'danger');
+                    });
+            });
+        }
+
+        // Copy referral link
+        const copyReferralLinkBtn = document.getElementById('copy-referral-link');
+        if (copyReferralLinkBtn) {
+            copyReferralLinkBtn.addEventListener('click', function() {
+                const referralLink = document.getElementById('referral-link').value;
+                copyToClipboard(referralLink)
+                    .then(() => {
+                        showToast('Success', 'Referral link copied to clipboard!', 'success');
+                    })
+                    .catch(() => {
+                        showToast('Error', 'Failed to copy referral link', 'danger');
+                    });
+            });
+        }
+
+        // Save notification preferences
+        const savePreferencesBtn = document.getElementById('save-preferences');
+        if (savePreferencesBtn) {
+            savePreferencesBtn.addEventListener('click', function() {
+                const enablePush = document.getElementById('enable-push').checked;
+                const marketCheckboxes = document.querySelectorAll('.market-checkbox:checked');
+                const selectedMarkets = Array.from(marketCheckboxes).map(cb => cb.value);
+
+                const preferences = {
+                    push_enabled: enablePush,
+                    markets: selectedMarkets
+                };
+
+                fetch('/update-notification-preferences', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ preferences })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('Success', 'Notification preferences saved!', 'success');
+
+                        // If push is enabled, show notification permission button if needed
+                        if (enablePush && Notification.permission !== 'granted') {
+                            document.getElementById('enable-notifications').classList.remove('d-none');
+                        } else {
+                            document.getElementById('enable-notifications').classList.add('d-none');
+                        }
+                    } else {
+                        showToast('Error', 'Failed to save preferences', 'danger');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error saving preferences:', error);
+                    showToast('Error', 'Failed to save preferences', 'danger');
+                });
+            });
+        }
+
+        // Enable browser notifications
+        const enableNotificationsBtn = document.getElementById('enable-notifications');
+        if (enableNotificationsBtn) {
+            enableNotificationsBtn.addEventListener('click', function() {
+                requestNotificationPermission();
+            });
+
+            // Show button if needed
+            if (document.getElementById('enable-push').checked && Notification.permission !== 'granted') {
+                enableNotificationsBtn.classList.remove('d-none');
+            }
+        }
+
+        // Change PIN
+        const changePinBtn = document.getElementById('change-pin-btn');
+        if (changePinBtn) {
+            changePinBtn.addEventListener('click', function() {
+                const currentPin = document.getElementById('current_pin').value;
+                const newPin = document.getElementById('new_pin').value;
+                const confirmNewPin = document.getElementById('confirm_new_pin').value;
+
+                // Validate
+                if (newPin !== confirmNewPin) {
+                    document.getElementById('confirm_new_pin').classList.add('is-invalid');
+                    return;
+                }
+
+                // TODO: Implement change PIN API endpoint
+                showToast('Info', 'PIN change functionality will be available soon', 'info');
+
+                // Close modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('changePinModal'));
+                modal.hide();
+            });
+        }
+    });
+
+    function requestNotificationPermission() {
+        Notification.requestPermission()
+            .then(permission => {
+                if (permission === 'granted') {
+                    showToast('Success', 'Push notifications enabled!', 'success');
+                    document.getElementById('enable-notifications').classList.add('d-none');
+
+                    // Register for push notifications
+                    if ('serviceWorker' in navigator) {
+                        navigator.serviceWorker.ready
+                            .then(registration => {
+                                // Get VAPID key from meta tag
+                                const vapidKey = document.querySelector('meta[name="vapid-key"]')?.getAttribute('content');
+                                if (vapidKey) {
+                                    subscribeToPushNotifications(registration, vapidKey);
+                                }
+                            });
+                    }
+                } else {
+                    showToast('Notice', 'Push notification permission denied', 'warning');
+                }
+            });
+    }
+
+    function copyToClipboard(elementId) {
+        return navigator.clipboard.writeText(document.getElementById(elementId).textContent);
+    }
+</script>
+{% endblock %}

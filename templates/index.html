@@ -1,0 +1,341 @@
+{% extends 'base.html' %}
+
+{% block title %}KalyanX - Professional Satta Matka Prediction{% endblock %}
+
+{% block content %}
+<div class="row mb-5">
+    <div class="col-lg-8">
+        <div class="hero-section text-center text-lg-start mb-5">
+            <h1 class="display-4 fw-bold mb-4">Unlock the Secrets of <span class="text-danger">Satta Matka</span></h1>
+            <p class="lead mb-4">KalyanX brings you the most accurate predictions powered by cutting-edge Machine Learning algorithms. Start your journey to success today!</p>
+            <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                {% if current_user.is_authenticated %}
+                <a href="{{ url_for('prediction.dashboard') }}" class="btn btn-gambling btn-lg px-4 me-md-2">Go to Dashboard</a>
+                <a href="https://t.me/kxpred" target="_blank" class="btn btn-warning btn-lg px-4">
+                    <i class="fab fa-telegram me-2"></i> Upgrade to Premium
+                </a>
+                {% else %}
+                <a href="{{ url_for('prediction.dashboard') }}" class="btn btn-gambling btn-lg px-4 me-md-2">View Today's Predictions</a>
+                <a href="https://t.me/kxpred" target="_blank" class="btn btn-warning btn-lg px-4">
+                    <i class="fab fa-telegram me-2"></i> Get Premium Access
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="features-section py-5">
+            <h2 class="text-center mb-5">Why Choose KalyanX?</h2>
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="feature-icon mb-3">
+                                <i class="fas fa-brain fa-2x text-danger"></i>
+                            </div>
+                            <h3 class="card-title h5">AI-Powered Predictions</h3>
+                            <p class="card-text">Our advanced ML algorithms analyze years of data to generate highly accurate predictions across all markets.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="feature-icon mb-3">
+                                <i class="fas fa-mobile-alt fa-2x text-danger"></i>
+                            </div>
+                            <h3 class="card-title h5">Mobile OTP Verification</h3>
+                            <p class="card-text">Secure and easy registration with mobile OTP verification and 4-digit PIN for quick access.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="feature-icon mb-3">
+                                <i class="fas fa-shield-alt fa-2x text-danger"></i>
+                            </div>
+                            <h3 class="card-title h5">Secure Access</h3>
+                            <p class="card-text">Fast registration with PIN access keeps your account secure and easy to use.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="feature-icon mb-3">
+                                <i class="fas fa-users fa-2x text-danger"></i>
+                            </div>
+                            <h3 class="card-title h5">Community & Forum</h3>
+                            <p class="card-text">Connect with other players, share strategies, and gain valuable insights in our premium forum.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card mb-4">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0"><i class="fas fa-fire me-2"></i> Latest Results</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover results-table mb-0">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Market</th>
+                                <th>Result</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for result in results %}
+                            <tr>
+                                <td>{{ result.date.strftime('%d/%m/%Y') }}</td>
+                                <td>{{ result.market }}</td>
+                                <td>
+                                    <span class="result-open">{{ result.open }}</span>-
+                                    <span class="result-jodi">{{ result.jodi }}</span>-
+                                    <span class="result-close">{{ result.close }}</span>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="3" class="text-center py-3">No results available</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer text-center">
+                {% if current_user.is_authenticated %}
+                <a href="{{ url_for('prediction.results') }}" class="btn btn-sm btn-outline-danger">View All Results</a>
+                {% else %}
+                <a href="{{ url_for('prediction.results') }}" class="btn btn-sm btn-outline-danger">View All Results</a>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card testimonial-card">
+            <div class="card-header bg-dark">
+                <h5 class="mb-0"><i class="fas fa-star me-2 text-warning"></i> User Testimonials</h5>
+            </div>
+            <div class="card-body">
+                <div id="testimonialCarousel" class="carousel slide" data-bs-ride="carousel">
+                    <div class="carousel-inner">
+                        <div class="carousel-item active">
+                            <div class="testimonial-item text-center">
+                                <p class="mb-3">"KalyanX's predictions have been spot on! I've had great success following their recommended jodis."</p>
+                                <div class="testimonial-author">
+                                    <div class="rating text-warning mb-2">
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                    </div>
+                                    <p class="mb-0"><strong>Rajesh K.</strong></p>
+                                    <small class="text-muted">Premium Member</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="carousel-item">
+                            <div class="testimonial-item text-center">
+                                <p class="mb-3">"The forum discussions are incredibly valuable. I've learned so much from the community!"</p>
+                                <div class="testimonial-author">
+                                    <div class="rating text-warning mb-2">
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star-half-alt"></i>
+                                    </div>
+                                    <p class="mb-0"><strong>Sunil P.</strong></p>
+                                    <small class="text-muted">3 Months Member</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="carousel-item">
+                            <div class="testimonial-item text-center">
+                                <p class="mb-3">"The push notifications for matched predictions are game-changing. Never miss a winning opportunity!"</p>
+                                <div class="testimonial-author">
+                                    <div class="rating text-warning mb-2">
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                    </div>
+                                    <p class="mb-0"><strong>Priya M.</strong></p>
+                                    <small class="text-muted">Premium Member</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#testimonialCarousel" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Previous</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#testimonialCarousel" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Next</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="premium-prediction-section mb-5">
+    <h2 class="text-center mb-4">Today's Premium Predictions <span class="badge bg-warning">7-Day Free Trial</span></h2>
+    <div class="position-relative premium-content">
+        <div class="row row-cols-1 row-cols-md-2 g-4">
+            <div class="col">
+                <div class="card h-100">
+                    <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Milan Day</h5>
+                        <span class="badge bg-warning">Premium</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-6">
+                                <h6>Open Digits</h6>
+                                <div class="digits-container d-flex flex-wrap gap-2 mb-3">
+                                    <span class="digit-box">2</span>
+                                    <span class="digit-box">7</span>
+                                </div>
+                                <h6>Close Digits</h6>
+                                <div class="digits-container d-flex flex-wrap gap-2">
+                                    <span class="digit-box">4</span>
+                                    <span class="digit-box">9</span>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <h6>Recommended Jodi</h6>
+                                <div class="jodi-container d-flex flex-wrap gap-2">
+                                    <span class="jodi-box bg-success text-white">27-49</span>
+                                    <span class="jodi-box">27-94</span>
+                                    <span class="jodi-box">72-49</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <small class="text-muted">Confidence Score: <span class="text-success">89%</span></small>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card h-100">
+                    <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Kalyan</h5>
+                        <span class="badge bg-warning">Premium</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-6">
+                                <h6>Open Digits</h6>
+                                <div class="digits-container d-flex flex-wrap gap-2 mb-3">
+                                    <span class="digit-box">5</span>
+                                    <span class="digit-box">8</span>
+                                </div>
+                                <h6>Close Digits</h6>
+                                <div class="digits-container d-flex flex-wrap gap-2">
+                                    <span class="digit-box">3</span>
+                                    <span class="digit-box">6</span>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <h6>Recommended Jodi</h6>
+                                <div class="jodi-container d-flex flex-wrap gap-2">
+                                    <span class="jodi-box bg-success text-white">58-36</span>
+                                    <span class="jodi-box">58-63</span>
+                                    <span class="jodi-box">85-36</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <small class="text-muted">Confidence Score: <span class="text-success">92%</span></small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="text-center mt-3">
+        <p class="text-muted small">These predictions are part of your 7-day free trial. After trial expiration, you'll need to register to access premium content.</p>
+    </div>
+</div>
+
+<div class="markets-section mb-5">
+    <h2 class="text-center mb-4">Markets We Cover</h2>
+    <div class="row row-cols-1 row-cols-md-3 row-cols-lg-5 g-4">
+        <div class="col">
+            <div class="card h-100 text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Time Bazar</h5>
+                    <p class="card-text text-muted">Mon-Sat: 1:00 PM - 2:30 PM</p>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card h-100 text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Milan Day</h5>
+                    <p class="card-text text-muted">Mon-Sat: 3:15 PM - 5:15 PM</p>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card h-100 text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Kalyan</h5>
+                    <p class="card-text text-muted">Mon-Sat: 4:30 PM - 6:30 PM</p>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card h-100 text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Milan Night</h5>
+                    <p class="card-text text-muted">Mon-Sat: 9:00 PM - 11:00 PM</p>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card h-100 text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Main Bazar</h5>
+                    <p class="card-text text-muted">Mon-Sat: 9:30 PM - 11:59 PM</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="cta-section text-center py-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <h2 class="mb-4">Ready to Transform Your Game?</h2>
+            <p class="lead mb-4">Join thousands of satisfied users who are already enjoying KalyanX's premium predictions.</p>
+            {% if current_user.is_authenticated %}
+                {% if current_user.has_access %}
+                <a href="{{ url_for('prediction.predictions') }}" class="btn btn-gambling btn-lg px-5">View Today's Predictions</a>
+                {% else %}
+                <a href="{{ url_for('subscription.plans') }}" class="btn btn-gambling btn-lg px-5">Upgrade to Premium</a>
+                {% endif %}
+            {% else %}
+            <a href="{{ url_for('prediction.dashboard') }}" class="btn btn-gambling btn-lg px-5">View Today's Predictions</a>
+            {% endif %}
+            
+            <div class="mt-4 mb-4">
+                <a href="https://t.me/kxpred" class="btn btn-warning btn-lg px-5" target="_blank">
+                    <i class="fab fa-telegram me-2"></i>Join Our Premium Membership just at 900 Rs. Per Month
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

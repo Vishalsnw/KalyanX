@@ -1,0 +1,235 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - KalyanX{% endblock %}
+
+{% block head_extra %}
+<meta name="description" content="KalyanX - Your personal dashboard for Satta Matka predictions">
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="card">
+            <div class="card-header bg-dark">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-tachometer-alt me-2"></i> Your Dashboard</h5>
+                    <div>
+                        <span class="badge bg-primary">{{ today.strftime('%d %b %Y') }}</span>
+                        {% if current_user.is_admin %}
+                        <span class="badge bg-danger ms-2">Admin</span>
+                        {% elif current_user.is_premium %}
+                        <span class="badge bg-warning ms-2">Premium</span>
+                        {% else %}
+                        {# Always show active trial badge for all visitors due to forced access #}
+                        <span class="badge bg-info ms-2">Free Trial</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <h5>
+                            {% if current_user.is_authenticated %}
+                                Welcome back, {{ current_user.mobile or current_user.email or 'User' }}!
+                            {% else %}
+                                Welcome to KalyanX!
+                            {% endif %}
+                        </h5>
+                        <p>Here are today's top predictions for all markets. Remember to check back regularly for updates.</p>
+                        
+                        {# Remove the trial expired message entirely for everyone #}
+                        {# Trial access is now forced for all visitors, so this message should never show #}
+                        
+                        {% if current_user.is_trial_active and current_user.days_remaining <= 2 %}
+                        <div class="alert alert-info">
+                            <h5><i class="fas fa-info-circle me-2"></i> Your trial ends soon!</h5>
+                            <p>You have {{ current_user.days_remaining }} days left in your trial. Subscribe now to continue enjoying premium features.</p>
+                            <a href="https://t.me/kxpred" target="_blank" class="btn btn-warning">
+                                <i class="fab fa-telegram me-2"></i> Upgrade to Premium
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4">
+                        <div class="alert alert-info">
+                            <h5><i class="fas fa-info-circle me-2"></i> Today's Tip</h5>
+                            <p class="mb-0">Check predictions regularly as they update based on latest market results. Our ML models continuously learn and improve!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i> Latest Predictions</h5>
+            </div>
+            <div class="card-body">
+                {# Always show predictions to all visitors by checking g.has_premium_access instead of current_user.has_access #}
+                {% if current_user.has_access or g.has_premium_access %}
+                    <div class="row">
+                    {% for market, prediction in predictions.items() %}
+                        <div class="col-md-6 col-lg-4 mb-4">
+                            <div class="card prediction-card{% if market in matched_predictions %} highlight{% endif %}">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">{{ market }}</h5>
+                                    <div>
+                                        {% if market in prediction_dates %}
+                                        <span class="badge bg-primary">{{ format_date(prediction_dates[market]) }}</span>
+                                        {% else %}
+                                        <span class="badge bg-primary">{{ format_date(prediction.date) }}</span>
+                                        {% endif %}
+                                        {% if market in matched_predictions %}
+                                        <span class="badge bg-success ms-1">Match!</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row mb-3">
+                                        <div class="col-6">
+                                            <div class="prediction-label">Open Digits</div>
+                                            <div class="prediction-value">
+                                                {% if prediction.open_digits %}
+                                                {{ prediction.open_digits[0] }}, {{ prediction.open_digits[1] }}
+                                                {% else %}
+                                                -, -
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="prediction-label">Close Digits</div>
+                                            <div class="prediction-value">
+                                                {% if prediction.close_digits %}
+                                                {{ prediction.close_digits[0] }}, {{ prediction.close_digits[1] }}
+                                                {% else %}
+                                                -, -
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <div class="prediction-label">Top Jodi Predictions</div>
+                                        <div class="jodi-container">
+                                            {% for jodi in prediction.jodi_list %}
+                                            <span class="jodi-box{% if market in matched_predictions and matched_predictions[market].get('jodi') %} match{% endif %}">{{ jodi }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <div class="prediction-label">Patti Predictions</div>
+                                        <div class="jodi-container">
+                                            {% for patti in prediction.patti_list %}
+                                            <span class="jodi-box{% if market in matched_predictions and ((matched_predictions[market].get('patti_open') and patti == result.open) or (matched_predictions[market].get('patti_close') and patti == result.close)) %} match{% endif %}">{{ patti }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                    
+                                    <a href="{{ url_for('prediction.predictions', market=market) }}" class="btn btn-sm btn-outline-light w-100">View Details <i class="fas fa-arrow-right ms-1"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="col-12">
+                            <div class="alert alert-info">
+                                <h5><i class="fas fa-info-circle me-2"></i> No predictions available yet</h5>
+                                <p>Predictions for today will be available soon. Please check back later.</p>
+                            </div>
+                        </div>
+                    {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="alert alert-warning">
+                        <h5><i class="fas fa-lock me-2"></i> Premium Feature</h5>
+                        <p>Predictions are available only for premium members or during your free trial period.</p>
+                        <a href="https://t.me/kxpred" target="_blank" class="btn btn-warning">
+                            <i class="fab fa-telegram me-2"></i> Upgrade to Premium
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    {% for market_name, market_results in results.items() %}
+    <div class="col-md-6 mb-4">
+        <div class="card market-card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 market-name">{{ market_name }}</h5>
+                <a href="{{ url_for('prediction.results', market=market_name) }}" class="btn btn-sm btn-outline-secondary">View All</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover results-table mb-0">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Open</th>
+                                <th>Jodi</th>
+                                <th>Close</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for result in market_results %}
+                            <tr>
+                                <td>{{ result.date.strftime('%d/%m/%Y') }}</td>
+                                <td class="result-open">{{ result.open }}</td>
+                                <td class="result-jodi">{{ result.jodi }}</td>
+                                <td class="result-close">{{ result.close }}</td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" class="text-center py-3">No results available</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+<!-- Referral Information -->
+{% if current_user.is_authenticated %}
+<div class="card bg-dark text-light mt-4">
+    <div class="card-body text-center">
+        <h5 class="card-title">Share & Earn</h5>
+        <p class="card-text">Share your referral code with friends and get 1 month free for each successful referral!</p>
+        <div class="referral-code mb-2" id="referral-code">{{ current_user.referral_code }}</div>
+        <button id="copy-referral" class="btn btn-sm btn-outline-light"><i class="fas fa-copy me-1"></i> Copy Code</button>
+    </div>
+</div>
+{% endif %}
+
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Copy referral code functionality
+        const copyReferralBtn = document.getElementById('copy-referral');
+        if (copyReferralBtn) {
+            copyReferralBtn.addEventListener('click', function() {
+                const referralCode = document.getElementById('referral-code').textContent;
+                copyToClipboard(referralCode)
+                    .then(() => {
+                        showToast('Success', 'Referral code copied to clipboard!', 'success');
+                    })
+                    .catch(() => {
+                        showToast('Error', 'Failed to copy referral code', 'danger');
+                    });
+            });
+        }
+    });
+</script>
+{% endblock %}

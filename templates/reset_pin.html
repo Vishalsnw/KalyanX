@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block title %}Reset PIN - KalyanX{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0 text-center">Create New PIN</h3>
+                </div>
+                <div class="card-body">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ category }}">{{ message }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+                    
+                    <p class="text-center mb-4">Enter a new 4-digit PIN for your account.</p>
+                    
+                    <form method="POST" action="{{ url_for('auth.reset_pin', token=token) }}">
+                        <div class="mb-3">
+                            <label for="new_pin" class="form-label">New PIN</label>
+                            <input type="password" class="form-control" id="new_pin" name="new_pin" 
+                                   required maxlength="4" pattern="[0-9]{4}" 
+                                   title="PIN must be 4 digits"
+                                   inputmode="numeric">
+                            <div class="form-text">Enter a 4-digit PIN</div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="confirm_pin" class="form-label">Confirm PIN</label>
+                            <input type="password" class="form-control" id="confirm_pin" name="confirm_pin" 
+                                   required maxlength="4" pattern="[0-9]{4}" 
+                                   title="PIN must be 4 digits"
+                                   inputmode="numeric">
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">Reset PIN</button>
+                        </div>
+                    </form>
+                    
+                    <div class="mt-4 text-center">
+                        <a href="{{ url_for('auth.login') }}">Back to Login</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-advance to next input
+    const pinInputs = document.querySelectorAll('input[type="password"]');
+    
+    // Add input validation - only allow numbers
+    pinInputs.forEach(input => {
+        input.addEventListener('input', function(e) {
+            this.value = this.value.replace(/[^0-9]/g, '');
+        });
+    });
+    
+    // Check if PINs match on submit
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        const newPin = document.getElementById('new_pin').value;
+        const confirmPin = document.getElementById('confirm_pin').value;
+        
+        if (newPin !== confirmPin) {
+            e.preventDefault();
+            alert('PINs do not match');
+        }
+        
+        if (newPin.length !== 4) {
+            e.preventDefault();
+            alert('PIN must be exactly 4 digits');
+        }
+    });
+});
+</script>
+{% endblock %}

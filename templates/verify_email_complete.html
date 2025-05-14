@@ -1,0 +1,193 @@
+{% extends 'base.html' %}
+
+{% block title %}Verify Email - KalyanX{% endblock %}
+
+{% block head_extra %}
+<meta name="robots" content="noindex, nofollow">
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="text-center mb-4">
+        <div class="auth-logo">
+            <i class="fas fa-dice-d20 text-danger"></i>
+        </div>
+        <h1 class="h3 mb-3 fw-normal">Email Verification</h1>
+        <p class="text-muted">Completing your account verification</p>
+    </div>
+    
+    <div class="card">
+        <div class="card-body p-4">
+            <div id="verification-status" class="alert alert-info">
+                <div class="d-flex align-items-center">
+                    <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+                    <span>Verifying your email...</span>
+                </div>
+            </div>
+            
+            <!-- PIN Creation Form (shown after verification) -->
+            <div id="pin-creation-form" class="d-none">
+                <h5 class="card-title mb-3">Create Your 4-Digit PIN</h5>
+                
+                <div class="mb-3">
+                    <label for="pin" class="form-label">Create 4-Digit PIN</label>
+                    <input type="password" class="form-control" id="pin" maxlength="4" placeholder="Enter 4-digit PIN">
+                    <small class="form-text text-muted">You'll use this PIN to login to your account</small>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="confirm-pin" class="form-label">Confirm PIN</label>
+                    <input type="password" class="form-control" id="confirm-pin" maxlength="4" placeholder="Re-enter your PIN">
+                </div>
+                
+                <div class="mb-3 mt-3" id="referral-section" class="d-none">
+                    <label for="referral_code" class="form-label">Referral Code (Optional)</label>
+                    <input type="text" class="form-control" id="referral_code" placeholder="Enter referral code">
+                    <small class="form-text text-muted">Get 1 month free when you subscribe after trial</small>
+                </div>
+                
+                <div class="d-grid">
+                    <button id="complete-registration-btn" class="btn btn-gambling btn-lg">Complete Registration</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="auth-links text-center mt-3">
+        <p>Already have an account? <a href="{{ url_for('auth.login') }}">Login</a></p>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Firebase SDK Scripts -->
+<script type="module">
+  // Import Firebase modules
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js';
+  import { getAuth, isSignInWithEmailLink, signInWithEmailLink } from 'https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js';
+
+  // Firebase configuration from server
+  const firebaseConfig = {
+    apiKey: "{{ firebase_api_key }}",
+    authDomain: "{{ firebase_project_id }}.firebaseapp.com",
+    projectId: "{{ firebase_project_id }}",
+    appId: "{{ firebase_app_id }}"
+  };
+
+  // Elements
+  const verificationStatus = document.getElementById('verification-status');
+  const pinCreationForm = document.getElementById('pin-creation-form');
+  const completeRegBtn = document.getElementById('complete-registration-btn');
+  const pinInput = document.getElementById('pin');
+  const confirmPinInput = document.getElementById('confirm-pin');
+  const referralSection = document.getElementById('referral-section');
+  const referralCodeInput = document.getElementById('referral_code');
+  
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  
+  // Check if this is a sign-in with email link
+  if (isSignInWithEmailLink(auth, window.location.href)) {
+    // Get email from localStorage
+    let email = window.localStorage.getItem('emailForSignIn');
+    if (!email) {
+      // If email not found, ask user for it
+      email = window.prompt('Please provide your email for confirmation');
+    }
+    
+    if (email) {
+      // Complete sign-in process
+      signInWithEmailLink(auth, email, window.location.href)
+        .then((result) => {
+          // Clear localStorage
+          window.localStorage.removeItem('emailForSignIn');
+          
+          // Success - show PIN creation form
+          verificationStatus.className = 'alert alert-success';
+          verificationStatus.innerHTML = '<strong>Email verified!</strong> Please create a PIN to complete your registration.';
+          pinCreationForm.classList.remove('d-none');
+          
+          // Check if there's a referral code in the URL
+          const urlParams = new URLSearchParams(window.location.search);
+          const refCode = urlParams.get('ref');
+          if (refCode) {
+            referralSection.classList.remove('d-none');
+            referralCodeInput.value = refCode;
+          }
+          
+          // Get the Firebase user
+          window.firebaseUser = result.user;
+        })
+        .catch((error) => {
+          console.error('Error signing in with email link:', error);
+          verificationStatus.className = 'alert alert-danger';
+          verificationStatus.innerHTML = `<strong>Verification failed!</strong> ${error.message} <a href="{{ url_for('auth.register') }}">Try again</a>`;
+        });
+    } else {
+      verificationStatus.className = 'alert alert-danger';
+      verificationStatus.innerHTML = '<strong>Verification failed!</strong> No email provided. <a href="{{ url_for('auth.register') }}">Try again</a>';
+    }
+  } else {
+    // Not a sign-in link
+    verificationStatus.className = 'alert alert-danger';
+    verificationStatus.innerHTML = '<strong>Invalid verification link!</strong> Please request a new verification email. <a href="{{ url_for('auth.register') }}">Try again</a>';
+  }
+  
+  // Handle complete registration button
+  if (completeRegBtn) {
+    completeRegBtn.addEventListener('click', async function() {
+      const pin = pinInput.value;
+      const confirmPin = confirmPinInput.value;
+      const referralCode = referralCodeInput.value;
+      
+      // Validate PIN
+      if (pin !== confirmPin) {
+        alert('PINs do not match. Please try again.');
+        return;
+      }
+      
+      if (pin.length !== 4 || !/^\d{4}$/.test(pin)) {
+        alert('PIN must be exactly 4 digits.');
+        return;
+      }
+      
+      // Get Firebase token for the verified user
+      if (!window.firebaseUser) {
+        alert('Authentication error. Please try again.');
+        return;
+      }
+      
+      try {
+        // Get ID token
+        const idToken = await window.firebaseUser.getIdToken();
+        
+        // Send to backend for account creation
+        const response = await fetch('/api/verify-firebase-token', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            idToken: idToken,
+            pin: pin,
+            referralCode: referralCode || null
+          })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          // Registration successful, redirect
+          window.location.href = result.redirect || '/dashboard';
+        } else {
+          alert(result.message || 'Registration failed. Please try again.');
+        }
+      } catch (error) {
+        console.error('Registration error:', error);
+        alert('Registration failed. Please try again.');
+      }
+    });
+  }
+</script>
+{% endblock %}

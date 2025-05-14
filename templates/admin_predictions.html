@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Predictions - Admin - KalyanX{% endblock %}
+
+{% block head_extra %}
+<meta name="robots" content="noindex, nofollow">
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0"><i class="fas fa-chart-line me-2"></i> Manage Predictions</h1>
+    <div>
+        <a href="{{ url_for('admin.index') }}" class="btn btn-secondary"><i class="fas fa-arrow-left me-1"></i> Back to Dashboard</a>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header bg-dark d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Prediction Records ({{ total_predictions }})</h5>
+        <div class="d-flex gap-2">
+            <form id="filter-form" class="d-flex" method="get">
+                <select name="market" class="form-select form-select-sm me-2" onchange="this.form.submit()">
+                    <option value="">All Markets</option>
+                    {% for market_name in markets %}
+                        <option value="{{ market_name }}" {{ 'selected' if selected_market == market_name else '' }}>
+                            {{ market_name }}
+                        </option>
+                    {% endfor %}
+                </select>
+                
+                <input type="date" name="date" class="form-control form-control-sm me-2" 
+                       value="{{ selected_date }}" onchange="this.form.submit()">
+            </form>
+            
+            <a href="{{ url_for('admin.generate_predictions') }}" class="btn btn-sm btn-success">
+                <i class="fas fa-sync me-1"></i> Generate New
+            </a>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Date</th>
+                        <th>Market</th>
+                        <th>Open Digits</th>
+                        <th>Close Digits</th>
+                        <th>Jodi List</th>
+                        <th>Confidence</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if predictions %}
+                        {% for pred in predictions %}
+                            <tr>
+                                <td>{{ pred.id }}</td>
+                                <td>{{ pred.date.strftime('%d-%b-%Y') }}</td>
+                                <td>{{ pred.market }}</td>
+                                <td>{{ pred.open_digits|join('-') if pred.open_digits else '-' }}</td>
+                                <td>{{ pred.close_digits|join('-') if pred.close_digits else '-' }}</td>
+                                <td>{{ pred.jodi_list|join(', ') if pred.jodi_list else '-' }}</td>
+                                <td>{{ "%.2f"|format(pred.confidence_score*100) }}%</td>
+                                <td>{{ pred.created_at.strftime('%d-%b-%Y %H:%M') }}</td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <form method="post" action="{{ url_for('admin.delete_prediction') }}">
+                                            <input type="hidden" name="prediction_id" value="{{ pred.id }}">
+                                            <button type="submit" class="btn btn-outline-danger btn-sm"
+                                                    onclick="return confirm('Are you sure you want to delete this prediction?')">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="9" class="text-center py-3">No prediction records found</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% if total_pages > 1 %}
+        <div class="card-footer">
+            <nav aria-label="Prediction pagination">
+                <ul class="pagination justify-content-center mb-0">
+                    <li class="page-item {{ 'disabled' if page == 1 else '' }}">
+                        <a class="page-link" href="{{ url_for('admin.predictions', page=page-1, market=selected_market, date=selected_date) if page > 1 else '#' }}">Previous</a>
+                    </li>
+                    
+                    {% for p in range(1, total_pages + 1) %}
+                        <li class="page-item {{ 'active' if p == page else '' }}">
+                            <a class="page-link" href="{{ url_for('admin.predictions', page=p, market=selected_market, date=selected_date) }}">{{ p }}</a>
+                        </li>
+                    {% endfor %}
+                    
+                    <li class="page-item {{ 'disabled' if page == total_pages else '' }}">
+                        <a class="page-link" href="{{ url_for('admin.predictions', page=page+1, market=selected_market, date=selected_date) if page < total_pages else '#' }}">Next</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

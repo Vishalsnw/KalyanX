@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+
+{% block title %}Direct Registration - KalyanX{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">Quick Registration</h3>
+                </div>
+                <div class="card-body">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ category }}">{{ message }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+                    
+                    <div class="alert alert-info">
+                        <p class="mb-0"><i class="fas fa-info-circle"></i> Complete registration in one simple step.</p>
+                    </div>
+                    
+                    <form method="POST" action="{{ url_for('auth.direct_register_route') }}" class="needs-validation" novalidate>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email Address</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                            <div class="invalid-feedback">Please enter a valid email address</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="pin" class="form-label">Create 4-Digit PIN</label>
+                            <input type="password" class="form-control" id="pin" name="pin" pattern="[0-9]{4}" maxlength="4" required>
+                            <div class="invalid-feedback">PIN must be exactly 4 digits</div>
+                            <small class="text-muted">This PIN will be used to login to your account</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="confirm_pin" class="form-label">Confirm PIN</label>
+                            <input type="password" class="form-control" id="confirm_pin" name="confirm_pin" pattern="[0-9]{4}" maxlength="4" required>
+                            <div class="invalid-feedback">PINs must match</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="referral_code" class="form-label">Referral Code (Optional)</label>
+                            <input type="text" class="form-control" id="referral_code" name="referral_code" value="{{ referral }}">
+                            <small class="text-muted">Get 1 month free when you subscribe after trial</small>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">Register Now</button>
+                            <a href="{{ url_for('auth.login') }}" class="btn btn-link">Already have an account? Login</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Form validation
+    const form = document.querySelector('.needs-validation');
+    const pinInput = document.getElementById('pin');
+    const confirmPinInput = document.getElementById('confirm_pin');
+    
+    if (form) {
+        form.addEventListener('submit', function(event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            
+            // Check if PINs match
+            if (pinInput.value !== confirmPinInput.value) {
+                confirmPinInput.setCustomValidity('PINs do not match');
+                event.preventDefault();
+            } else {
+                confirmPinInput.setCustomValidity('');
+            }
+            
+            form.classList.add('was-validated');
+        }, false);
+    }
+    
+    // Clear custom validity when typing in confirm PIN field
+    if (confirmPinInput) {
+        confirmPinInput.addEventListener('input', function() {
+            if (pinInput.value === confirmPinInput.value) {
+                confirmPinInput.setCustomValidity('');
+            } else {
+                confirmPinInput.setCustomValidity('PINs do not match');
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

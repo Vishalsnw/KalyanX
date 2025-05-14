@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="KalyanX - Professional Satta Matka Prediction Platform">
+    <meta name="keywords" content="satta matka, kalyan matka, matka prediction, satta, matka, kalyan">
+    <meta name="author" content="KalyanX">
+    <meta name="theme-color" content="#0f172a">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <meta property="og:title" content="KalyanX - Professional Satta Matka Prediction Platform">
+    <meta property="og:description" content="Get accurate Satta Matka predictions with KalyanX">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://kalyanx.com">
+
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+
+    <title>{% block title %}KalyanX - Satta Matka Prediction{% endblock %}</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css" rel="stylesheet">
+
+    <!-- Font Awesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link href="{{ url_for('static', filename='css/styles.css') }}" rel="stylesheet">
+
+    <!-- VAPID Keys for Push Notifications -->
+    <meta name="vapid-key" content="{{ config.get('VAPID_PUBLIC_KEY', '') }}">
+
+    {% block head_extra %}{% endblock %}
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="{{ url_for('prediction.index') }}">
+                <span class="logo me-2"><i class="fas fa-dice-d20 text-danger"></i></span>
+                <span class="logo-text">KalyanX</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <!-- Always show navigation for both logged in and trial users -->
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'prediction.dashboard' or request.endpoint == 'prediction.index' %}active{% endif %}" 
+                           href="{% if current_user.is_authenticated %}{{ url_for('prediction.dashboard') }}{% else %}{{ url_for('prediction.index') }}{% endif %}">
+                            <i class="fas fa-tachometer-alt me-1"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'prediction.predictions' %}active{% endif %}" href="{{ url_for('prediction.predictions') }}">
+                            <i class="fas fa-chart-line me-1"></i> Predictions
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'prediction.results' %}active{% endif %}" href="{{ url_for('prediction.results') }}">
+                            <i class="fas fa-list-ol me-1"></i> Results
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint.startswith('forum.') %}active{% endif %}" href="{{ url_for('forum.index') }}">
+                            <i class="fas fa-comments me-1"></i> Forum
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link bg-warning text-dark rounded" href="https://t.me/kxpred" target="_blank">
+                            <i class="fab fa-telegram me-1"></i> Get Premium Membership
+                        </a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    {% if not current_user.is_authenticated %}
+                    {% if is_trial_user is defined and is_trial_user %}
+                    <li class="nav-item">
+                        <a class="nav-link bg-info text-dark rounded me-2" href="#">
+                            <i class="fas fa-clock me-1"></i> Trial Mode Active
+                        </a>
+                    </li>
+                    {% endif %}
+                    {% endif %}
+                    {% if current_user.is_authenticated %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="notifications-dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-bell"></i>
+                            <span class="badge bg-danger notification-badge d-none">0</span>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end notification-dropdown" aria-labelledby="notifications-dropdown">
+                            <div class="notification-header d-flex justify-content-between p-2 border-bottom">
+                                <span>Notifications</span>
+                                <a href="#" class="text-muted small mark-all-read">Mark all as read</a>
+                            </div>
+                            <div class="notification-body" style="max-height: 300px; overflow-y: auto;">
+                                <div class="text-center p-3 empty-notifications">
+                                    <p class="text-muted">No new notifications</p>
+                                </div>
+                                <div class="notification-list"></div>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user-circle me-1"></i> 
+                            <span class="d-none d-md-inline">{{ current_user.mobile }}</span>
+                            {% if current_user.is_premium %}
+                            <span class="badge bg-warning ms-1">Premium</span>
+                            {% elif current_user.is_trial_active %}
+                            <span class="badge bg-info ms-1">Trial</span>
+                            {% endif %}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('auth.profile') }}" onclick="event.stopPropagation()">
+                                    <i class="fas fa-user me-2"></i> Profile
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('subscription.plans') }}">
+                                    <i class="fas fa-crown me-2"></i> Subscription
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('prediction.results') }}">
+                                    <i class="fas fa-history me-2"></i> Market History
+                                </a>
+                            </li>
+                            {% if current_user.is_admin %}
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('admin.index') }}">
+                                    <i class="fas fa-tools me-2"></i> Admin Panel
+                                </a>
+                            </li>
+                            {% endif %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('auth.logout') }}">
+                                    <i class="fas fa-sign-out-alt me-2"></i> Logout
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    {% else %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="authDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user-circle me-1"></i> Account
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="authDropdown">
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('auth.login') }}">
+                                    <i class="fas fa-sign-in-alt me-2"></i> Login
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('auth.verify_phone') }}">
+                                    <i class="fas fa-user-plus me-2"></i> Register
+                                </a>
+                            </li>
+                            <!-- Admin login option removed as requested -->
+                        </ul>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    <div class="container mb-4">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Main Content -->
+    <main class="container mb-5">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer bg-dark text-light py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4">
+                    <h5 class="mb-3"><i class="fas fa-dice-d20 text-danger me-2"></i> KalyanX</h5>
+                    <p>Professional Satta Matka prediction platform with advanced ML algorithms for accurate predictions.</p>
+                </div>
+                <div class="col-lg-4">
+                    <h5 class="mb-3">Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="{{ url_for('prediction.index') }}" class="text-light"><i class="fas fa-home me-2"></i> Home</a></li>
+                        {% if current_user.is_authenticated %}
+                        <li><a href="{{ url_for('prediction.dashboard') }}" class="text-light"><i class="fas fa-tachometer-alt me-2"></i> Dashboard</a></li>
+                        <li><a href="{{ url_for('prediction.predictions') }}" class="text-light"><i class="fas fa-chart-line me-2"></i> Predictions</a></li>
+                        {% if current_user.is_admin %}
+                        <li><a href="{{ url_for('admin.index') }}" class="text-light"><i class="fas fa-tools me-2"></i> Admin Panel</a></li>
+                        {% endif %}
+                        <li><a href="{{ url_for('auth.logout') }}" class="text-light"><i class="fas fa-sign-out-alt me-2"></i> Logout</a></li>
+                        {% else %}
+                        <li><a href="{{ url_for('auth.login') }}" class="text-light"><i class="fas fa-sign-in-alt me-2"></i> Login</a></li>
+                        <li><a href="{{ url_for('auth.verify_phone') }}" class="text-light"><i class="fas fa-user-plus me-2"></i> Register</a></li>
+                        {% endif %}
+                    </ul>
+                </div>
+                <div class="col-lg-4">
+                    <h5 class="mb-3">Contact</h5>
+                    <p><i class="fas fa-envelope me-2"></i> support@kalyanx.com</p>
+                    <div class="social-icons">
+                        <a href="#" class="text-light me-3"><i class="fab fa-facebook fa-lg"></i></a>
+                        <a href="#" class="text-light me-3"><i class="fab fa-twitter fa-lg"></i></a>
+                        <a href="#" class="text-light me-3"><i class="fab fa-instagram fa-lg"></i></a>
+                        <a href="#" class="text-light"><i class="fab fa-telegram fa-lg"></i></a>
+                    </div>
+                </div>
+            </div>
+            <hr class="mt-4 mb-3">
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="mb-0">&copy; 2023 KalyanX. All rights reserved.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <div class="mb-2">
+                        <a href="{{ url_for('static.about') }}" class="text-light me-3">About Us</a>
+                        <a href="{{ url_for('static.contact') }}" class="text-light me-3">Contact Us</a>
+                        <a href="{{ url_for('static.privacy') }}" class="text-light me-3">Privacy Policy</a>
+                        <a href="{{ url_for('static.terms') }}" class="text-light me-3">Terms & Conditions</a>
+                        <a href="{{ url_for('static.pricing') }}" class="text-light">Pricing</a>
+                    </div>
+                    <p class="mb-0 small">
+                      <strong class="text-warning">Disclaimer:</strong> KalyanX is a non-commercial platform providing predictions using machine learning algorithms for entertainment purposes only. We are not associated with any illegal Matka business or gambling activities. Satta Matka may be banned or illegal in your jurisdiction - please respect your local laws. If you don't agree with our disclaimer, please exit immediately.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-messaging-compat.js"></script>
+
+    <script>
+        // Firebase configuration
+        console.log("Initializing Firebase in base template");
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBdksK14GepHhzd7xpCYhtQ1xh03sLOAH0",
+            authDomain: "kalyanx-replit.firebaseapp.com",
+            projectId: "kalyanx-replit",
+            storageBucket: "kalyanx-replit.firebasestorage.app",
+            messagingSenderId: "531899366727",
+            appId: "1:531899366727:web:8ff86e1a4f29654ccb2062",
+            measurementId: "G-8F26ESQRRE"
+        };
+
+        // Web client ID for Google Sign-In
+        const webClientId = "531899366727-8p0pgbfsp7a9ckmpa7koks3shhav8vt4.apps.googleusercontent.com";
+
+        console.log("Firebase config loaded with hardcoded values");
+
+        // Initialize Firebase
+        try {
+            if (typeof firebase !== 'undefined' && !firebase.apps?.length) {
+                firebase.initializeApp(firebaseConfig);
+                console.log("Firebase initialized successfully in base template");
+            } else if (firebase.apps?.length) {
+                console.log("Firebase already initialized");
+            } else {
+                console.error("Firebase undefined");
+            }
+        } catch (error) {
+            console.error("Error initializing Firebase:", error);
+        }
+    </script>
+
+    <!-- Fingerprint JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@fingerprintjs/fingerprintjs@3/dist/fp.min.js"></script>
+    
+    <!-- Trial Access JS -->
+    <script src="{{ url_for('static', filename='js/trial-access.js') }}"></script>
+    
+    <!-- Main JS -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+    {% if current_user.is_authenticated %}
+    <!-- Notification JS -->
+    <script src="{{ url_for('static', filename='js/notifications.js') }}"></script>
+    <!-- Premium Status Check -->
+    <script src="{{ url_for('static', filename='js/premium-check.js') }}"></script>
+    {% endif %}
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>

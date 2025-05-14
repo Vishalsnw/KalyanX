@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block title %}Premium Content Example - KalyanX{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="mb-4">Content Access Example</h1>
+            <p class="lead">This page demonstrates how premium content is shown or hidden based on subscription status.</p>
+            
+            <!-- Public content visible to all users -->
+            <div class="card mb-4">
+                <div class="card-header bg-dark">
+                    <h5 class="mb-0">Public Content</h5>
+                </div>
+                <div class="card-body">
+                    <p>This content is visible to all users, whether they have a premium subscription or not.</p>
+                    <p>Basic information and teaser content would be displayed here.</p>
+                </div>
+            </div>
+            
+            <!-- Premium content only visible to premium users -->
+            <div class="card mb-4 premium-content">
+                <div class="card-header bg-success">
+                    <h5 class="mb-0">Premium Content</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-success">
+                        <i class="fas fa-crown me-2"></i> You are seeing this content because you have an active premium subscription.
+                    </div>
+                    
+                    <h4>Advanced Prediction Data</h4>
+                    <p>Here you would see detailed prediction analytics, historical pattern analysis, and more.</p>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-header">Pattern Analysis</div>
+                                <div class="card-body">
+                                    <p>Detailed pattern analysis showing number frequency, recurring patterns, and statistical models.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-header">Confidence Scores</div>
+                                <div class="card-body">
+                                    <p>Machine learning confidence scores for each prediction, including model certainty rating.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Non-premium content only visible to non-premium users -->
+            <div class="card mb-4 non-premium-content">
+                <div class="card-header bg-warning">
+                    <h5 class="mb-0">Premium Content Preview</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-lock me-2"></i> This content is only available to premium subscribers.
+                    </div>
+                    
+                    <p>Upgrade to premium to access exclusive content including:</p>
+                    <ul>
+                        <li>Advanced prediction analytics</li>
+                        <li>Pattern recognition data</li>
+                        <li>Historical trend analysis</li>
+                        <li>Confidence scores for predictions</li>
+                    </ul>
+                    
+                    <div class="text-center mt-4">
+                        <a href="https://t.me/kxpred" target="_blank" class="btn btn-warning btn-lg">
+                            <i class="fab fa-telegram me-2"></i> Upgrade to Premium
+                        </a>
+                        <p class="small text-muted mt-2">Contact us on Telegram to upgrade your account for just ₹900/month</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

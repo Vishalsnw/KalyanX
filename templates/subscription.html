@@ -1,0 +1,234 @@
+{% extends 'base.html' %}
+
+{% block title %}Premium Subscription - KalyanX{% endblock %}
+
+{% block head_extra %}
+<meta name="description" content="KalyanX - Subscribe to premium predictions and features">
+{% endblock %}
+
+{% block content %}
+<div class="text-center mb-5">
+    <h1 class="h2 mb-3">Upgrade Your Prediction Experience</h1>
+    <p class="lead">Get unlimited access to premium predictions, forum discussions, and more!</p>
+</div>
+
+<div class="row mb-5">
+    {% if current_user.is_premium %}
+    <div class="col-lg-8 mx-auto">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="fas fa-check-circle me-2"></i> Active Premium Subscription</h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-3">
+                    <h3 id="subscription-status" class="text-success">Premium ({{ current_user.days_remaining }} days remaining)</h3>
+                    <p>Your subscription will expire on <span id="expiry-date">{{ current_user.premium_end_date.strftime('%d/%m/%Y') }}</span></p>
+                </div>
+                
+                <div class="progress mb-3" style="height: 10px;">
+                    <div id="subscription-progress" class="progress-bar bg-success" role="progressbar" style="width: {{ (current_user.days_remaining / 30) * 100 }}%"></div>
+                </div>
+                
+                <div class="d-flex justify-content-between small text-muted mb-4">
+                    <span>Today</span>
+                    <span id="days-remaining" data-days="{{ current_user.days_remaining }}" data-total-days="30">{{ current_user.days_remaining }} days remaining</span>
+                    <span>Expiry</span>
+                </div>
+                
+                <div class="text-center">
+                    <a href="{{ url_for('subscription.checkout') }}" class="btn btn-success">Extend Subscription</a>
+                    <a href="{{ url_for('subscription.history') }}" class="btn btn-outline-secondary ms-2">View History</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% elif current_user.is_trial_active %}
+    <div class="col-lg-8 mx-auto mb-5">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i> Active Free Trial</h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-3">
+                    <h3 id="subscription-status" class="text-info">Trial ({{ current_user.days_remaining }} days remaining)</h3>
+                    <p>Your free trial will expire on <span id="expiry-date">{{ current_user.trial_end_date.strftime('%d/%m/%Y') }}</span></p>
+                </div>
+                
+                <div class="progress mb-3" style="height: 10px;">
+                    <div id="subscription-progress" class="progress-bar bg-info" role="progressbar" style="width: {{ (current_user.days_remaining / 7) * 100 }}%"></div>
+                </div>
+                
+                <div class="d-flex justify-content-between small text-muted mb-4">
+                    <span>Today</span>
+                    <span id="days-remaining" data-days="{{ current_user.days_remaining }}" data-total-days="7">{{ current_user.days_remaining }} days remaining</span>
+                    <span>Expiry</span>
+                </div>
+                
+                <div class="alert alert-warning">
+                    <p><i class="fas fa-exclamation-triangle me-2"></i> Subscribe now to continue accessing premium features after your trial ends!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-12">
+        <div class="row justify-content-center">
+    {% else %}
+    <div class="col-12">
+        <div class="alert alert-warning mb-5">
+            <h5><i class="fas fa-exclamation-triangle me-2"></i> Your trial has expired!</h5>
+            <p>Subscribe now to regain access to premium predictions and features.</p>
+        </div>
+        
+        <div class="row justify-content-center">
+    {% endif %}
+        
+        {% if not current_user.is_premium %}
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card pricing-card">
+                    <div class="pricing-header text-center">
+                        <h4 class="my-0 fw-normal">Monthly Premium</h4>
+                        <div class="pricing-price">₹2,650</div>
+                        <div class="pricing-duration">per month</div>
+                    </div>
+                    <div class="card-body">
+                        <ul class="pricing-features mb-4">
+                            <li><i class="fas fa-check-circle"></i> Unlimited Predictions</li>
+                            <li><i class="fas fa-check-circle"></i> Open & Close Digits</li>
+                            <li><i class="fas fa-check-circle"></i> 10 Jodi Combinations</li>
+                            <li><i class="fas fa-check-circle"></i> 4 Patti Combinations</li>
+                            <li><i class="fas fa-check-circle"></i> Forum Access</li>
+                            <li><i class="fas fa-check-circle"></i> Push Notifications</li>
+                            <li><i class="fas fa-check-circle"></i> 24/7 Support</li>
+                        </ul>
+                        <div class="d-grid">
+                            <a href="{{ url_for('subscription.checkout') }}" class="btn btn-gambling subscribe-btn">Subscribe Now</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card pricing-card">
+                    <div class="pricing-header text-center">
+                        <h4 class="my-0 fw-normal">3-Month Premium</h4>
+                        <div class="pricing-price">₹6,999</div>
+                        <div class="pricing-duration">for 3 months <span class="badge bg-success">Save 12%</span></div>
+                    </div>
+                    <div class="card-body">
+                        <ul class="pricing-features mb-4">
+                            <li><i class="fas fa-check-circle"></i> All Monthly Features</li>
+                            <li><i class="fas fa-check-circle"></i> Priority Support</li>
+                            <li><i class="fas fa-check-circle"></i> Extended History Access</li>
+                            <li><i class="fas fa-check-circle"></i> Advanced Statistics</li>
+                            <li><i class="fas fa-check-circle"></i> Save 12% vs Monthly</li>
+                            <li><i class="fas fa-check-circle"></i> Forum VIP Badge</li>
+                            <li><i class="fas fa-check-circle"></i> Premium Email Updates</li>
+                        </ul>
+                        <div class="d-grid">
+                            <a href="{{ url_for('subscription.checkout') }}?plan=quarterly" class="btn btn-gambling subscribe-btn">Subscribe Now</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header bg-dark">
+                <h5 class="mb-0"><i class="fas fa-user-plus me-2"></i> Refer & Earn</h5>
+            </div>
+            <div class="card-body">
+                <p>Invite your friends to KalyanX and earn 1 month of free premium access for each successful referral!</p>
+                
+                <div class="mb-3">
+                    <label class="form-label">Your Referral Link</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" value="{{ request.host_url }}referral/{{ current_user.referral_code }}" id="referral-link" readonly>
+                        <button class="btn btn-outline-primary" id="copy-referral-link"><i class="fas fa-copy me-1"></i> Copy</button>
+                    </div>
+                    <small class="form-text text-muted">Share this link with friends and earn rewards when they subscribe!</small>
+                </div>
+                
+                <div class="alert alert-info">
+                    <h6><i class="fas fa-info-circle me-2"></i> How It Works</h6>
+                    <ol class="mb-0">
+                        <li>Share your referral link with friends</li>
+                        <li>They register and complete their free trial</li>
+                        <li>When they purchase a subscription, you get 1 month free</li>
+                        <li>There's no limit to how many friends you can refer!</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header bg-dark">
+                <h5 class="mb-0"><i class="fas fa-question-circle me-2"></i> Frequently Asked Questions</h5>
+            </div>
+            <div class="card-body">
+                <div class="accordion" id="subscriptionFAQ">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingOne">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                                How accurate are the predictions?
+                            </button>
+                        </h2>
+                        <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#subscriptionFAQ">
+                            <div class="accordion-body">
+                                Our predictions are generated using advanced machine learning algorithms that analyze historical data, patterns, and market trends. While we strive for the highest accuracy, please remember that all predictions are probabilistic in nature.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingTwo">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                How do I cancel my subscription?
+                            </button>
+                        </h2>
+                        <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#subscriptionFAQ">
+                            <div class="accordion-body">
+                                You can cancel your subscription at any time from your profile page. Your access will continue until the end of your current billing period, after which it will not renew automatically.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingThree">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                                What payment methods do you accept?
+                            </button>
+                        </h2>
+                        <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#subscriptionFAQ">
+                            <div class="accordion-body">
+                                We accept all major credit and debit cards, UPI, net banking, and popular wallets through our secure payment gateway, Razorpay.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingFour">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+                                Is my payment information secure?
+                            </button>
+                        </h2>
+                        <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour" data-bs-parent="#subscriptionFAQ">
+                            <div class="accordion-body">
+                                Absolutely! We use Razorpay, a PCI DSS compliant payment processor. We never store your card details on our servers. All payment information is encrypted and securely processed.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/subscription.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block title %}Reset PIN Link - KalyanX{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-0 shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">Reset PIN Direct Link</h3>
+                </div>
+                <div class="card-body">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ category }}">{{ message }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <div class="alert alert-warning">
+                        <h5>Development Mode Only!</h5>
+                        <p>This page is for development purposes only. In production, reset links would be sent via email.</p>
+                    </div>
+                    
+                    {% if token %}
+                        <div class="mb-4">
+                            <h5>Generated Reset Link:</h5>
+                            <div class="alert alert-info">
+                                <a href="{{ url_for('auth.reset_pin', token=token, _external=True) }}" class="text-break">
+                                    {{ url_for('auth.reset_pin', token=token, _external=True) }}
+                                </a>
+                            </div>
+                            <div class="d-grid gap-2 mt-3">
+                                <a href="{{ url_for('auth.reset_pin', token=token) }}" class="btn btn-primary">
+                                    Click to reset PIN
+                                </a>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="mb-4">
+                            <div class="alert alert-warning">
+                                <p>No reset token is currently available. Please enter your email address below to generate a reset link.</p>
+                            </div>
+                            
+                            <form method="post" action="{{ url_for('auth.view_reset_link') }}">
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">Email Address</label>
+                                    <input type="email" class="form-control" id="email" name="email" value="{{ email or '' }}" required>
+                                </div>
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-primary">Generate Reset Link</button>
+                                </div>
+                            </form>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="d-grid gap-2 mt-4">
+                        <a href="{{ url_for('auth.forgot_pin') }}" class="btn btn-secondary">
+                            Back to Forgot PIN
+                        </a>
+                        <a href="{{ url_for('auth.login') }}" class="btn btn-link">
+                            Return to Login
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

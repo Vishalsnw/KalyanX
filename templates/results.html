@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block title %}Results - {{ selected_date }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-md-12">
+      <h2 class="mb-4">Satta Matka Results</h2>
+      
+      <!-- Date and Market Selection -->
+      <div class="card mb-4">
+        <div class="card-body">
+          <form method="get" action="{{ url_for('prediction.results') }}">
+            <div class="row">
+              <div class="col-md-5">
+                <div class="form-group">
+                  <label for="date">Select Date:</label>
+                  <select class="form-control" id="date" name="date" onchange="this.form.submit()">
+                    {% for date_str in date_range %}
+                      <option value="{{ date_str }}" {% if date_str == selected_date %}selected{% endif %}>
+                        {{ date_str }}
+                      </option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+              <div class="col-md-5">
+                <div class="form-group">
+                  <label for="market">Select Market:</label>
+                  <select class="form-control" id="market" name="market" onchange="this.form.submit()">
+                    <option value="">All Markets</option>
+                    {% for market_name in markets %}
+                      <option value="{{ market_name }}" {% if market_name == selected_market %}selected{% endif %}>
+                        {{ market_name }}
+                      </option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+              <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary mb-3">View Results</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+      
+      <!-- Results Table -->
+      <div class="card">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0">Results for {{ selected_date }}</h5>
+        </div>
+        <div class="card-body">
+          {% if results %}
+            <div class="table-responsive">
+              <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th>Market</th>
+                    <th>Open</th>
+                    <th>Jodi</th>
+                    <th>Close</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for result in results %}
+                    <tr>
+                      <td>{{ result.market }}</td>
+                      <td>{{ result.open }}</td>
+                      <td>{{ result.jodi }}</td>
+                      <td>{{ result.close }}</td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% else %}
+            <div class="alert alert-info">
+              No results found for this date{% if selected_market %} and market{% endif %}.
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

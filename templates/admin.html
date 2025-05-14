@@ -1,0 +1,297 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Dashboard - KalyanX{% endblock %}
+
+{% block head_extra %}
+<meta name="robots" content="noindex, nofollow">
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0"><i class="fas fa-tachometer-alt me-2"></i> Admin Dashboard</h1>
+    <div>
+        <button class="btn btn-success" id="train-models-btn" form="train-models-form"><i class="fas fa-brain me-1"></i> Train Models</button>
+        <a href="{{ url_for('admin.import_csv') }}" class="btn btn-primary"><i class="fas fa-file-import me-1"></i> Import CSV</a>
+    </div>
+    <form id="train-models-form" action="{{ url_for('admin.train_models') }}" method="post"></form>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3 mb-4">
+        <div class="card admin-card h-100">
+            <div class="card-body">
+                <div class="admin-value">{{ stats.total_users }}</div>
+                <div class="admin-label">Total Users</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-4">
+        <div class="card admin-card h-100">
+            <div class="card-body">
+                <div class="admin-value">{{ stats.premium_users }}</div>
+                <div class="admin-label">Premium Users</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-4">
+        <div class="card admin-card h-100">
+            <div class="card-body">
+                <div class="admin-value">₹{{ stats.subscription_revenue|int }}</div>
+                <div class="admin-label">Total Revenue</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-4">
+        <div class="card admin-card h-100">
+            <div class="card-body">
+                <div class="admin-value">{{ stats.total_results }}</div>
+                <div class="admin-label">Total Results</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header bg-dark">
+                <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i> User Registrations (Last 30 Days)</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="registrations-chart" height="250"></canvas>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header bg-dark">
+                <h5 class="mb-0"><i class="fas fa-bullseye me-2"></i> Prediction Accuracy</h5>
+            </div>
+            <div class="card-body">
+                {% set market_keys = accuracy.markets.keys()|list %}
+                {% set open_values = [] %}
+                {% set close_values = [] %}
+                {% set jodi_values = [] %}
+                {% for market in market_keys %}
+                    {% set _ = open_values.append(accuracy.markets[market].open_accuracy) %}
+                    {% set _ = close_values.append(accuracy.markets[market].close_accuracy) %}
+                    {% set _ = jodi_values.append(accuracy.markets[market].jodi_accuracy) %}
+                {% endfor %}
+                <canvas id="prediction-accuracy-chart" 
+                        height="250"
+                        data-markets="{{ market_keys|tojson }}"
+                        data-open="{{ open_values|tojson }}"
+                        data-close="{{ close_values|tojson }}"
+                        data-jodi="{{ jodi_values|tojson }}"></canvas>
+                
+                <div class="row mt-4">
+                    <div class="col-md-4 text-center">
+                        <div class="h5">{{ accuracy.open_accuracy }}%</div>
+                        <div class="text-muted">Open Accuracy</div>
+                    </div>
+                    <div class="col-md-4 text-center">
+                        <div class="h5">{{ accuracy.close_accuracy }}%</div>
+                        <div class="text-muted">Close Accuracy</div>
+                    </div>
+                    <div class="col-md-4 text-center">
+                        <div class="h5">{{ accuracy.jodi_accuracy }}%</div>
+                        <div class="text-muted">Jodi Accuracy</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header bg-dark">
+                <h5 class="mb-0"><i class="fas fa-tools me-2"></i> Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group">
+                    <a href="{{ url_for('admin.users') }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                        <div><i class="fas fa-users me-2"></i> Manage Users</div>
+                        <span class="badge bg-primary rounded-pill">{{ stats.total_users }}</span>
+                    </a>
+                    <a href="{{ url_for('admin.results') }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                        <div><i class="fas fa-list-ol me-2"></i> Manage Results</div>
+                        <span class="badge bg-primary rounded-pill">{{ stats.total_results }}</span>
+                    </a>
+                    <a href="{{ url_for('admin.predictions') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-chart-line me-2"></i> Manage Predictions
+                    </a>
+                    <a href="{{ url_for('admin.subscriptions') }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                        <div><i class="fas fa-crown me-2"></i> Manage Subscriptions</div>
+                        <span class="badge bg-primary rounded-pill">{{ stats.total_subscriptions }}</span>
+                    </a>
+                    <a href="{{ url_for('admin.forum') }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                        <div><i class="fas fa-comments me-2"></i> Manage Forum</div>
+                        <span class="badge bg-primary rounded-pill">{{ stats.total_forum_posts }}</span>
+                    </a>
+                    <a href="{{ url_for('admin.firebase_users') }}" class="list-group-item list-group-item-action">
+                        <i class="fab fa-google me-2"></i> Firebase Users
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header bg-dark">
+                <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i> Market Distribution</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="market-distribution-chart" 
+                        height="220"
+                        data-markets="{{ stats.markets.keys()|list|tojson }}"
+                        data-counts="{{ stats.markets.values()|list|tojson }}"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Registrations Chart
+        const registrationsDates = {{ stats.registration_timeline.keys()|list|tojson }};
+        const registrationsCounts = {{ stats.registration_timeline.values()|list|tojson }};
+        
+        const registrationsCtx = document.getElementById('registrations-chart').getContext('2d');
+        new Chart(registrationsCtx, {
+            type: 'line',
+            data: {
+                labels: registrationsDates,
+                datasets: [{
+                    label: 'New Users',
+                    data: registrationsCounts,
+                    backgroundColor: 'rgba(13, 202, 240, 0.2)',
+                    borderColor: 'rgba(13, 202, 240, 1)',
+                    borderWidth: 2,
+                    tension: 0.3,
+                    pointRadius: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Market Distribution Chart
+        const marketDistributionElement = document.getElementById('market-distribution-chart');
+        createMarketDistributionChart(marketDistributionElement, 
+                                     JSON.parse(marketDistributionElement.getAttribute('data-markets')),
+                                     JSON.parse(marketDistributionElement.getAttribute('data-counts')));
+        
+        // Prediction Accuracy Chart
+        const accuracyChartElement = document.getElementById('prediction-accuracy-chart');
+        createPredictionAccuracyChart(accuracyChartElement, 
+                                     JSON.parse(accuracyChartElement.getAttribute('data-markets')),
+                                     JSON.parse(accuracyChartElement.getAttribute('data-open')),
+                                     JSON.parse(accuracyChartElement.getAttribute('data-close')),
+                                     JSON.parse(accuracyChartElement.getAttribute('data-jodi')));
+    });
+    
+    function createMarketDistributionChart(element, markets, counts) {
+        const ctx = element.getContext('2d');
+        
+        // Generate colors for each market
+        const colors = markets.map((_, index) => {
+            const hue = (index * 360 / markets.length) % 360;
+            return `hsl(${hue}, 70%, 60%)`;
+        });
+        
+        new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: markets,
+                datasets: [
+                    {
+                        data: counts,
+                        backgroundColor: colors,
+                        borderColor: '#212529',
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            boxWidth: 12,
+                            font: {
+                                size: 10
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+    
+    function createPredictionAccuracyChart(element, markets, openData, closeData, jodiData) {
+        const ctx = element.getContext('2d');
+        
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: markets,
+                datasets: [
+                    {
+                        label: 'Open Accuracy',
+                        data: openData,
+                        backgroundColor: 'rgba(13, 202, 240, 0.6)',
+                        borderColor: 'rgba(13, 202, 240, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Close Accuracy',
+                        data: closeData,
+                        backgroundColor: 'rgba(25, 135, 84, 0.6)',
+                        borderColor: 'rgba(25, 135, 84, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Jodi Accuracy',
+                        data: jodiData,
+                        backgroundColor: 'rgba(220, 53, 69, 0.6)',
+                        borderColor: 'rgba(220, 53, 69, 1)',
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        title: {
+                            display: true,
+                            text: 'Accuracy (%)'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                }
+            }
+        });
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+
+{% block title %}Create New Post - KalyanX Forum{% endblock %}
+
+{% block head_extra %}
+<meta name="robots" content="noindex, nofollow">
+{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ url_for('forum.index') }}">Forum</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Create New Post</li>
+    </ol>
+</nav>
+
+<div class="card">
+    <div class="card-header bg-dark">
+        <h5 class="mb-0"><i class="fas fa-edit me-2"></i> Create New Post</h5>
+    </div>
+    <div class="card-body">
+        <form id="post-form" action="{{ url_for('forum.create_post_route') }}" method="post">
+            <div class="mb-3">
+                <label for="title" class="form-label">Title</label>
+                <input type="text" class="form-control" id="title" name="title" placeholder="Enter a descriptive title" maxlength="100" required>
+                <div class="form-text">Choose a clear, specific title to attract responses.</div>
+            </div>
+            
+            <div class="mb-3">
+                <label for="category_id" class="form-label">Category</label>
+                <select class="form-select" id="category_id" name="category_id" required>
+                    <option value="">Select a category</option>
+                    {% for category in categories %}
+                    <option value="{{ category.id }}" {% if request.args.get('category_id') == category.id|string %}selected{% endif %}>
+                        {{ category.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+                <div class="form-text">Choose the most appropriate category for your post.</div>
+            </div>
+            
+            <div class="mb-4">
+                <label for="content" class="form-label">Content</label>
+                <textarea class="form-control" id="content" name="content" rows="10" placeholder="Write your post content here..." required></textarea>
+                <div class="form-text">Provide as much detail as possible to get helpful responses.</div>
+            </div>
+            
+            <div class="d-flex justify-content-between">
+                <a href="{{ url_for('forum.index') }}" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary">Create Post</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header bg-dark">
+        <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i> Posting Guidelines</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="mb-2">
+                    <i class="fas fa-check-circle text-success me-2"></i> Be clear and specific in your title
+                </div>
+                <div class="mb-2">
+                    <i class="fas fa-check-circle text-success me-2"></i> Provide detailed information in your post
+                </div>
+                <div class="mb-2">
+                    <i class="fas fa-check-circle text-success me-2"></i> Be respectful of other members
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-2">
+                    <i class="fas fa-times-circle text-danger me-2"></i> No spam or promotional content
+                </div>
+                <div class="mb-2">
+                    <i class="fas fa-times-circle text-danger me-2"></i> Don't share personal information
+                </div>
+                <div class="mb-2">
+                    <i class="fas fa-times-circle text-danger me-2"></i> Avoid all-caps or excessive formatting
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/forum.js') }}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Simple content validation
+        const postForm = document.getElementById('post-form');
+        if (postForm) {
+            postForm.addEventListener('submit', function(e) {
+                const title = document.getElementById('title').value.trim();
+                const content = document.getElementById('content').value.trim();
+                const category = document.getElementById('category_id').value;
+                
+                if (!title || !content || !category) {
+                    e.preventDefault();
+                    showToast('Error', 'Please fill out all fields', 'danger');
+                }
+                
+                // Check minimum content length
+                if (content.length < 20) {
+                    e.preventDefault();
+                    showToast('Error', 'Content must be at least 20 characters long', 'danger');
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}
