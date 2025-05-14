@@ -1,0 +1,111 @@
+{% macro render_post_preview(post) %}
+<a href="{{ url_for('forum.post', post_id=post.id) }}" class="list-group-item list-group-item-action forum-post">
+    <div class="forum-post-header">
+        <h6 class="mb-1">{{ post.title }}</h6>
+        <small class="text-muted forum-date" data-date="{{ post.created_at }}">{{ post.created_at.strftime('%d/%m/%Y') }}</small>
+    </div>
+    <div class="forum-post-meta">
+        <small class="text-muted">
+            <span class="me-2">By {{ post.user.mobile[:6] }}XXXX</span>
+            <span class="me-2"><i class="fas fa-comment-alt fa-sm"></i> {{ post.comment_count }}</span>
+            <span><i class="fas fa-eye fa-sm"></i> {{ post.views }}</span>
+        </small>
+    </div>
+</a>
+{% endmacro %}
+
+{% macro render_pagination(page, total_pages, url_for_page) %}
+<nav aria-label="Page navigation">
+    <ul class="pagination justify-content-center">
+        <li class="page-item {% if page <= 1 %}disabled{% endif %}">
+            <a class="page-link" href="{{ url_for_page(page - 1) if page > 1 else '#' }}" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+            </a>
+        </li>
+        
+        {% set start_page = [page - 2, 1]|max %}
+        {% set end_page = [start_page + 4, total_pages]|min %}
+        {% set start_page = [end_page - 4, 1]|max %}
+        
+        {% if start_page > 1 %}
+        <li class="page-item">
+            <a class="page-link" href="{{ url_for_page(1) }}">1</a>
+        </li>
+        {% if start_page > 2 %}
+        <li class="page-item disabled">
+            <span class="page-link">...</span>
+        </li>
+        {% endif %}
+        {% endif %}
+        
+        {% for p in range(start_page, end_page + 1) %}
+        <li class="page-item {% if p == page %}active{% endif %}">
+            <a class="page-link" href="{{ url_for_page(p) }}">{{ p }}</a>
+        </li>
+        {% endfor %}
+        
+        {% if end_page < total_pages %}
+        {% if end_page < total_pages - 1 %}
+        <li class="page-item disabled">
+            <span class="page-link">...</span>
+        </li>
+        {% endif %}
+        <li class="page-item">
+            <a class="page-link" href="{{ url_for_page(total_pages) }}">{{ total_pages }}</a>
+        </li>
+        {% endif %}
+        
+        <li class="page-item {% if page >= total_pages %}disabled{% endif %}">
+            <a class="page-link" href="{{ url_for_page(page + 1) if page < total_pages else '#' }}" aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+            </a>
+        </li>
+    </ul>
+</nav>
+{% endmacro %}
+
+{% macro render_comment(comment, depth=0) %}
+<div class="forum-comment {% if depth > 0 %}forum-comment-reply{% endif %}" id="comment-{{ comment.id }}">
+    <div class="d-flex mb-2">
+        <div class="user-info me-2">
+            <i class="fas fa-user-circle fa-2x text-secondary"></i>
+        </div>
+        <div>
+            <div class="comment-author fw-bold">{{ comment.user.mobile[:6] }}XXXX</div>
+            <div class="forum-date small text-muted" data-date="{{ comment.created_at }}">{{ comment.created_at.strftime('%d/%m/%Y %H:%M') }}</div>
+        </div>
+    </div>
+    
+    <div class="comment-content mb-2">{{ comment.content }}</div>
+    
+    <div class="comment-actions">
+        <button class="btn btn-sm btn-link text-decoration-none reply-btn" data-comment-id="{{ comment.id }}">
+            <i class="fas fa-reply"></i> Reply
+        </button>
+        <button class="btn btn-sm btn-link text-decoration-none" onclick="quoteComment('{{ comment.id }}')">
+            <i class="fas fa-quote-right"></i> Quote
+        </button>
+    </div>
+    
+    <div id="reply-form-{{ comment.id }}" class="reply-form mt-3 d-none">
+        <form action="{{ url_for('forum.create_comment_route', post_id=comment.post_id) }}" method="post">
+            <input type="hidden" name="parent_id" value="{{ comment.id }}">
+            <div class="mb-3">
+                <textarea class="form-control" name="content" rows="3" placeholder="Write your reply..." required></textarea>
+            </div>
+            <div class="d-flex justify-content-end">
+                <button type="button" class="btn btn-sm btn-secondary me-2" onclick="document.getElementById('reply-form-{{ comment.id }}').classList.add('d-none')">Cancel</button>
+                <button type="submit" class="btn btn-sm btn-primary">Post Reply</button>
+            </div>
+        </form>
+    </div>
+    
+    {% if comment.replies %}
+    <div class="comment-replies mt-3">
+        {% for reply in comment.replies %}
+            {{ render_comment(reply, depth + 1) }}
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+{% endmacro %}

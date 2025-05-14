@@ -1,0 +1,132 @@
+{% macro render_prediction_card(prediction, result, matches={}) %}
+<div class="card prediction-card{% if matches and matches|length > 0 %} highlight{% endif %}">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">{{ prediction.market }}</h5>
+        {% if matches and matches|length > 0 %}
+        <span class="badge bg-success">Match!</span>
+        {% endif %}
+    </div>
+    <div class="card-body">
+        <div class="row mb-3">
+            <div class="col-6">
+                <div class="prediction-label">Open Digits</div>
+                <div class="prediction-value{% if matches and matches.get('open') %} text-success{% endif %}">
+                    {% if prediction.open_digits %}
+                    {{ prediction.open_digits[0] }},{{ prediction.open_digits[1] }}
+                    {% else %}
+                    -,-
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="prediction-label">Close Digits</div>
+                <div class="prediction-value{% if matches and matches.get('close') %} text-success{% endif %}">
+                    {% if prediction.close_digits %}
+                    {{ prediction.close_digits[0] }},{{ prediction.close_digits[1] }}
+                    {% else %}
+                    -,-
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="mb-3">
+            <div class="prediction-label">Top Jodi Predictions</div>
+            <div class="jodi-container">
+                {% for jodi in prediction.jodi_list %}
+                <span class="jodi-box{% if matches and matches.get('jodi') and jodi == result.jodi %} match{% endif %}">{{ jodi }}</span>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <div class="mb-3">
+            <div class="prediction-label">Patti Predictions</div>
+            <div class="jodi-container">
+                {% for patti in prediction.patti_list %}
+                <span class="jodi-box{% if matches and ((matches.get('patti_open') and patti == result.open) or (matches.get('patti_close') and patti == result.close)) %} match{% endif %}">{{ patti }}</span>
+                {% endfor %}
+            </div>
+        </div>
+        
+        {% if result %}
+        <div class="mt-3 pt-3 border-top">
+            <div class="prediction-label">Actual Result</div>
+            <div class="d-flex justify-content-between">
+                <div class="text-center">
+                    <div class="small text-muted">Open</div>
+                    <div class="prediction-value">{{ result.open or '-' }}</div>
+                </div>
+                <div class="text-center">
+                    <div class="small text-muted">Jodi</div>
+                    <div class="prediction-value text-warning">{{ result.jodi or '-' }}</div>
+                </div>
+                <div class="text-center">
+                    <div class="small text-muted">Close</div>
+                    <div class="prediction-value">{{ result.close or '-' }}</div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="mt-3 text-center">
+            <div class="text-muted small">Waiting for results...</div>
+            <div class="spinner-border spinner-border-sm text-secondary mt-1" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+        {% endif %}
+        
+        <div class="mt-3 d-flex justify-content-between">
+            <div>
+                <span class="badge bg-secondary">{{ prediction.date.strftime('%d/%m/%Y') }}</span>
+                {% if prediction.confidence_score %}
+                <span class="badge bg-info ms-1">{{ (prediction.confidence_score * 100)|int }}% confidence</span>
+                {% endif %}
+            </div>
+            <button class="btn btn-sm btn-outline-light copy-jodi-btn" 
+                    data-jodi="{{ prediction.jodi_list|join(',') }}">
+                <i class="fas fa-copy"></i> Copy Jodis
+            </button>
+        </div>
+    </div>
+</div>
+{% endmacro %}
+
+{% macro render_result_row(result) %}
+<tr>
+    <td>{{ result.date.strftime('%d/%m/%Y') }}</td>
+    <td>{{ result.market }}</td>
+    <td class="result-open">{{ result.open }}</td>
+    <td class="result-jodi">{{ result.jodi }}</td>
+    <td class="result-close">{{ result.close }}</td>
+    <td>
+        {% if result.is_weekend %}
+        <span class="badge bg-info">Weekend</span>
+        {% endif %}
+        {% if result.is_holiday %}
+        <span class="badge bg-warning">Holiday</span>
+        {% endif %}
+    </td>
+</tr>
+{% endmacro %}
+
+{% macro render_market_selector(markets, selected_market) %}
+<select id="market-selector" class="form-select">
+    <option value="">All Markets</option>
+    {% for market_name in markets %}
+    <option value="{{ market_name }}" {% if selected_market == market_name %}selected{% endif %}>
+        {{ market_name }}
+    </option>
+    {% endfor %}
+</select>
+{% endmacro %}
+
+{% macro render_date_selector(date_range, selected_date) %}
+<select id="date-selector" class="form-select">
+    <option value="">Select Date</option>
+    {% for date_str in date_range %}
+    <option value="{{ date_str }}" {% if selected_date.strftime('%Y-%m-%d') == date_str %}selected{% endif %}>
+        {{ date_str }}
+    </option>
+    {% endfor %}
+</select>
+{% endmacro %}
