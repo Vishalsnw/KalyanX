@@ -1,0 +1,13 @@
+API KEY - AIzaSyBdksK14GepHhzd7xpCYhtQ1xh03sLOAH0
+
+Auth domain - kalyanx-replit.firebaseapp.com
+
+Project ID - kalyanx-replit
+
+MessagingSenderId - 531899366727
+
+App ID - 1:531899366727:web:8ff86e1a4f29654ccb2062
+
+Web client ID - 531899366727-8p0pgbfsp7a9ckmpa7koks3shhav8vt4.apps.googleusercontent.com
+
+Web client secret - 
