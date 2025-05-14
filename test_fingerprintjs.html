@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>FingerprintJS Test</title>
+</head>
+<body>
+    <h1>FingerprintJS Test</h1>
+    <div id="result">Testing...</div>
+
+    <!-- FingerprintJS -->
+    <script src="https://cdn.jsdelivr.net/npm/@fingerprintjs/fingerprintjs@3/dist/fp.min.js"></script>
+    
+    <script>
+    // Initialize FingerprintJS
+    function initializeFingerprintJS() {
+      if (window.FingerprintJS) {
+        return FingerprintJS.load();
+      }
+      console.error("FingerprintJS library not found");
+      return Promise.resolve(null);
+    }
+
+    async function getVisitorId() {
+        const fp = await initializeFingerprintJS();
+        
+        // If fingerprint.js failed to load, use a fallback identifier
+        if (!fp) {
+          console.warn("Using fallback visitor ID method");
+          document.getElementById('result').innerText = "Error: FingerprintJS failed to load";
+          return "fallback-" + navigator.userAgent.replace(/\D+/g, '');
+        }
+        
+        try {
+          const result = await fp.get();
+          document.getElementById('result').innerText = "Visitor ID: " + result.visitorId;
+          return result.visitorId;
+        } catch (error) {
+          console.error("Error getting visitor ID:", error);
+          document.getElementById('result').innerText = "Error: " + error.message;
+          return "error-" + Date.now();
+        }
+    }
+
+    // Run when page loads
+    document.addEventListener('DOMContentLoaded', () => {
+        getVisitorId();
+    });
+    </script>
+</body>
+</html>
