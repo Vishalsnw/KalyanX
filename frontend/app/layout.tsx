@@ -1,6 +1,6 @@
 export const metadata = {
   title: 'KalyanX',
-  description: 'AI-powered prediction platform',
+  description: 'Satta prediction app',
 };
 
 export default function RootLayout({
