@@ -1,0 +1,14 @@
+*.py
+*.csv
+*.json
+*.txt
+.replit
+replit.nix
+.vscode
+.gitignore
+__pycache__/
+scraper.py
+enhanced_satta_data.csv
+main.py
+*.ipynb
+!frontend/**
